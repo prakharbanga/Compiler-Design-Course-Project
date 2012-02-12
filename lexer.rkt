@@ -54,8 +54,34 @@
       ["volatile" (token-VOLATILE)]
       ["while" (token-WHILE)]
 
+      ["@class" (token-CLASS)]
       ["@interface" (token-INTERFACE)]
+      ["@implementation" (token-IMPLEMENTATION)]
+      ["@end" (token-END)]
+      
+      ["@private" (token-PRIVATE)]
+      ["@public" (token-PUBLIC)]
+      ["@protected" (token-PROTECTED)]
+
+      ["@try" (token-TRY)]
+      ["@throw" (token-THROW)]
+      ["@catch" (token-CATCH)]
+      ["@finally" (token-FINALLY)]
+
+      ["@selector" (token-SELECTOR)]
+      ["@protocol" (token-PROTOCOL)]
+      ["@encode" (token-ENCODE)]
+      ["@synchronized" (token-SYNCHRONIZED)]
+      ["@autoreleasepool" (token-AUTORELEASEPOOL)]
+      ["@compatibility_alias" (token-COMPATIBILITY_ALIAS)]
+      ["@required" (token-REQUIRED)]
+      ["@optional" (token-OPTIONAL)]
+      ["@synthesize" (token-SYNTHESIZE)]
+      ["@dynamic" (token-DYNAMIC)] 
+      ["@property" (token-PROPERTY)] 
+      ["@package" (token-PACKAGE)] 
       ["@defs" (token-DEFS)]
+
       ["id" (token-ID)]
       ["in" (token-IN)]
       ["out" (token-OUT)]
@@ -63,12 +89,6 @@
       ["bycopy" (token-BYCOPY)]
       ["byref" (token-BYREF)]
       ["oneway" (token-ONEWAY)]
-      ["@class" (token-CLASS)]
-      ["@end" (token-END)]
-      ["@private" (token-PRIVATE)]
-      ["@public" (token-PUBLIC)]
-      ["@protected" (token-PROTECTED)]
-      ["@protocol" (token-PROTOCOL)]
 
       ; Likely bug region starts
       [(:: letter (:* (:or letter digit))) (token-IDENTIFIER lexeme)]
@@ -87,9 +107,13 @@
       [(:: (:? letter) (:: "\"" 
                            (:+ (:or (:: "\\" any-char) (char-complement (char-set "\\\""))))
                            "\"")) (token-STRING_LITERAL lexeme)]
+
+      [(:: "@" (:? letter) (:: "\"" 
+                               (:+ (:or (:: "\\" any-char) (char-complement (char-set "\\\""))))
+                               "\"")) (token-NSString lexeme)]
       ; Likely bug region ends
 
-      ["..." (token-ELLIPSIS)]
+      ["=" (token-ASSIGN)]
       [">>=" (token-RIGHT_ASSIGN)]
       ["<<=" (token-LEFT_ASSIGN)]
       ["+=" (token-ADD_ASSIGN)]
@@ -100,6 +124,7 @@
       ["&=" (token-AND_ASSIGN)]
       ["^=" (token-XOR_ASSIGN)]
       ["|=" (token-OR_ASSIGN)]
+
       [">>" (token-RIGHT_OP)]
       ["<<" (token-LEFT_OP)]
       ["++" (token-INC_OP)]
@@ -111,16 +136,17 @@
       [">=" (token-GE_OP)]
       ["==" (token-EQ_OP)]
       ["!=" (token-NE_OP)]
+
+      ["..." (token-ELLIPSIS)]
       [";" (token-SEMICOLON)]
-      [(:or "{" "<%") (token-LCB)]
-      [(:or "}" "%>") (token-RCB)]
-      ["," (token-COMMA)]
-      [":" (token-COLON)]
-      ["=" (token-ASSIGN)]
       ["(" (token-LB)]
       [")" (token-RB)]
       [(:or "[" "<:") (token-LSB)]
       [(:or "]" ":>") (token-RSB)]
+      [(:or "{" "<%") (token-LCB)]
+      [(:or "}" "%>") (token-RCB)]
+      ["," (token-COMMA)]
+      [":" (token-COLON)]
       ["." (token-DOT)]
       ["&" (token-AMPERSAND)]
       ["!" (token-EXCLAMATION)]
@@ -139,11 +165,17 @@
       [(eof) (token-EOF)]
       [(:or (char-set "\t\v\n\f") #\space) (objc-lexer input-port)]))
   
-  (define (test-objc-lexer str)
+  (define (test-objc-lexer-file file)
+    (let ((f (open-input-file file)))
+      (test-objc-lexer f)))
+
+  (define (test-objc-lexer-str str)
     (let ((p (open-input-string str)))
-      (port-count-lines! p)
+      (test-objc-lexer p)))
+
+  (define (test-objc-lexer port)
       (let loop ()
-        (let ((tok (objc-lexer p)))
+        (let ((tok (objc-lexer port)))
           (printf "~a\n" tok)
           (unless (equal? tok 'EOF)
-            (loop)))))))
+            (loop))))))
