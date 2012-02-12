@@ -3,7 +3,8 @@
            (prefix-in : parser-tools/lex-sre)
            parser-tools/lex)
   
-  (provide objc-lexer)
+  (provide (all-defined-out)
+           (all-from-out "tokens.rkt"))
   
   (define-lex-abbrevs
     [digit (:/ "0" "9")]
@@ -67,6 +68,7 @@
       ["@private" (token-PRIVATE)]
       ["@public" (token-PUBLIC)]
       ["@protected" (token-PROTECTED)]
+      ["@protocol" (token-PROTOCOL)]
 
       ; Likely bug region starts
       [(:: letter (:* (:or letter digit))) (token-IDENTIFIER lexeme)]
@@ -134,5 +136,5 @@
       ["|" (token-PIPE)]
       ["?" (token-QUESTIONMARK)]
 
-      [(eof) 'EOF]
+      [(eof) (token-EOF)]
       [(char-set "\t\v\n\f") (objc-lexer input-port)])))

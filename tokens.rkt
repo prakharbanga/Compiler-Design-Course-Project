@@ -7,7 +7,7 @@
   (define-tokens value-tokens (CONSTANT STRING_LITERAL
                                         IDENTIFIER))
 
-  (define-empty-tokens op (NEWLINE AUTO BREAK CASE CHAR
+  (define-empty-tokens op (NEWLINE AUTO BREAK CASE CHAR EOF
                                    CONST CONTINUE DEFAULT DO
                                    DOUBLE ELSE ENUM EXTERN
                                    FLOAT FOR GOTO IF INT
@@ -35,6 +35,4 @@
                                    ASSIGN SEMICOLON DIV
                                    MODULO AMPERSAND PIPE
                                    CARET PLUS ASTERISK
-                                   MINUS)))
-
-
+                                   MINUS PROTOCOL)))
