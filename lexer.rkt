@@ -113,7 +113,7 @@
       ["!=" (token-NE_OP)]
       [";" (token-SEMICOLON)]
       [(:or "{" "<%") (token-LCB)]
-      [(:or "}" "%>") (token-LSB)]
+      [(:or "}" "%>") (token-RCB)]
       ["," (token-COMMA)]
       [":" (token-COLON)]
       ["=" (token-ASSIGN)]
@@ -137,4 +137,13 @@
       ["?" (token-QUESTIONMARK)]
 
       [(eof) (token-EOF)]
-      [(char-set "\t\v\n\f") (objc-lexer input-port)])))
+      [(:or (char-set "\t\v\n\f") #\space) (objc-lexer input-port)]))
+  
+  (define (test-objc-lexer str)
+    (let ((p (open-input-string str)))
+      (port-count-lines! p)
+      (let loop ()
+        (let ((tok (objc-lexer p)))
+          (printf "~a\n" tok)
+          (unless (equal? tok 'EOF)
+            (loop)))))))
