@@ -165,6 +165,17 @@
       [(eof) (token-EOF)]
       [(:or (char-set "\t\v\n\f") #\space) (objc-lexer input-port)]))
   
+  (define (get-lexgen-file file)
+    (let ((f (open-input-file file)))
+      (get-lexgen f)))
+
+  (define (get-lexgen-str str)
+    (let ((p (open-input-string str)))
+      (get-lexgen p)))
+
+  (define (get-lexgen port)
+    (lambda () (objc-lexer port)))
+
   (define (test-objc-lexer-file file)
     (let ((f (open-input-file file)))
       (test-objc-lexer f)))
@@ -179,3 +190,4 @@
           (printf "~a\n" tok)
           (unless (equal? tok 'EOF)
             (loop))))))
+
