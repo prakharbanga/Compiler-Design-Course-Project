@@ -1,0 +1,13 @@
+(module symbol_table racket
+  (provide symbol_table)
+
+  (struct symbol_table (parent table))
+
+  (define (new_symbol_table parent)
+    (symbol_table parent (make-hash)))
+
+  (define (insert sym_tab lexeme attrs)
+    (hash-set! (symbol_table-table sym_tab) lexeme attrs))
+
+  (define (lookup sym_tab lexeme)
+    (hash-set! (symbol_table-table sym_tab) lexeme)))
