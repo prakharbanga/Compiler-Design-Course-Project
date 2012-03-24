@@ -40,4 +40,5 @@
                                 AMPERSAND EXCLAMATION
                                 TILDE MINUS PLUS ASTERISK
                                 DIV MODULO LESS GREATER
-                                CARET PIPE QUESTIONMARK EOF)))
+                                CARET PIPE QUESTIONMARK EOF
+                                DECLSPEC DLLIMPORT DLLEXPORT)))

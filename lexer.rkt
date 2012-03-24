@@ -53,6 +53,9 @@
       ["void" (token-VOID)]
       ["volatile" (token-VOLATILE)]
       ["while" (token-WHILE)]
+      ["__declspec" (token-DECLSPEC)]
+      ["dllimport" (token-DLLIMPORT)]
+      ["dllexport" (token-DLLEXPORT)]
 
       ["@class" (token-CLASS)]
       ["@interface" (token-INTERFACE)]

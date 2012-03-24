@@ -1,2 +1,4 @@
-a
-5 b 34 cdfs
+int main() {
+if(1) if(2) {} else {}
+}
+

@@ -2,6 +2,6 @@
 
 (require racket/cmdline
          "lexer.rkt"
-         "parser.rkt")
+         "new-parser.rkt")
 
 (objc-parser (get-lexgen-file (vector-ref (current-command-line-arguments) 0)))
