@@ -6,6 +6,8 @@
            "lexer.rkt")
 
   ; This is ugly, but couldn't find any other way to get multiple global constants
+
+  ; Assignment operators
   (define no__op_assgn 'no__op_assgn)
   (define mul_op_assgn 'mul_op_assgn)
   (define div_op_assgn 'div_op_assgn)
@@ -18,6 +20,7 @@
   (define xor_op_assgn 'xor_op_assgn)
   (define or__op_assgn 'or__op_assgn)
 
+  ; Unary operators
   (define adrop 'adrop)
   (define ptrop 'ptrop)
   (define valop 'valop)
@@ -25,10 +28,12 @@
   (define comop 'comop)
   (define notop 'notop)
 
+  ; Control flow
   (define stmts 'stmts)
   (define func 'func)
   (define skip 'skip)
 
+  ; Arithmetic operators
   (define mulop 'mulop)
   (define divop 'divop)
   (define modop 'modop)
@@ -49,15 +54,10 @@
   (define or_op 'or_op)
   (define terop 'terop)
 
-
-
-
-
-
-
+  ; The symbol table
   (define cur_sym_tab (new_symbol_table #f))
 
-  ; This is beautiful
+  ; Some macros
   (define-syntax-rule (assgn op op1 op2)
                       (if (equal? op no__op_assgn)
                         (list 'assgn (list op1 op2))
@@ -75,6 +75,7 @@
       (end EOF)
       (error void)
       (tokens value-tokens op)
+      (suppress)
       (grammar
         (exp 
           ((translation_unit) $1))
