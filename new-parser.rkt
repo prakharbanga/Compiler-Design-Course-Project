@@ -18,6 +18,7 @@
   (define xor_op_assgn 'xorop)
   (define or_op_assgn 'orop)
   (define stmts 'stmts)
+  (define func 'func)
 
   ; This is beautiful
   (define-syntax-rule (assgn op op1 op2)
@@ -33,7 +34,7 @@
       (tokens value-tokens op)
       (grammar
         (exp 
-          ((translation_unit) #f))
+          ((translation_unit) $1))
         (primary_expression 
           ((identifier) #f) 
           ((CONSTANT) #f) 
@@ -226,9 +227,9 @@
           ((VOLATILE) #f))
         (declarator 
           ((pointer direct_declarator) #f) 
-          ((direct_declarator) #f))
+          ((direct_declarator) $1))
         (direct_declarator
-          ((identifier) #f)
+          ((identifier) $1)
           ((LB declarator RB) #f)
           ((direct_declarator LSB constant_expression RSB) #f)
           ((direct_declarator LSB RSB) #f)
@@ -321,10 +322,10 @@
           ((RETURN SEMICOLON) #f) 
           ((RETURN expression SEMICOLON) #f))
         (translation_unit 
-          ((external_declaration) #f) 
+          ((external_declaration) $1) 
           ((translation_unit external_declaration) #f))
         (external_declaration
-          ((function_definition) #f)
+          ((function_definition) $1)
           ((declaration) #f)
           ((class_interface) #f)
           ((class_implementation) #f)
@@ -336,7 +337,7 @@
           ((declaration_specifiers declarator declaration_list compound_statement) #f)
           ((declaration_specifiers declarator compound_statement) #f)
           ((declarator declaration_list compound_statement) #f)
-          ((declarator compound_statement) #f))
+          ((declarator compound_statement) (list 'func (list $1 $2))))
         (class_interface
           ((INTERFACE class_name instance_variables interface_declaration_list END) #f)
           ((INTERFACE class_name COLON superclass_name instance_variables interface_declaration_list END) #f)
@@ -432,6 +433,6 @@
         (selector 
           ((identifier) #f))
         (identifier
-          ((IDENTIFIER) #f))
+          ((IDENTIFIER) $1))
         (method_type 
           ((LB type_name RB) #f))))))
