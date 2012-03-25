@@ -20,11 +20,19 @@
   (define stmts 'stmts)
   (define func 'func)
 
+  (define cur_sym_tab (new_symbol_table #f))
+
   ; This is beautiful
   (define-syntax-rule (assgn op op1 op2)
                       (if (equal? op no_op_assgn)
                         (list 'assgn (list op1 op2))
                         (list 'assgn (list op1 (list op (list op1 op2))))))
+
+  (define-syntax tree 
+    (syntax-rules ()
+      [(tree a) (list a)]
+       [(tree a b ...) (list a (list b ...))]))
+
 
   (define objc-parser
     (parser
@@ -128,7 +136,7 @@
           ((OR_ASSIGN) or_op_assgn))
         (expression 
           ((assignment_expression) $1) 
-          ((expression COMMA assignment_expression) #f))
+          ((expression COMMA assignment_expression) (tree stmts $1 $3)))
         (constant_expression 
           ((conditional_expression) #f))
         (declaration 
@@ -338,7 +346,7 @@
           ((declaration_specifiers declarator declaration_list compound_statement) #f)
           ((declaration_specifiers declarator compound_statement) #f)
           ((declarator declaration_list compound_statement) #f)
-          ((declarator compound_statement) (list 'func (list $1 $2))))
+          ((declarator compound_statement) (tree 'func $1 $2)))
         (class_interface
           ((INTERFACE class_name instance_variables interface_declaration_list END) #f)
           ((INTERFACE class_name COLON superclass_name instance_variables interface_declaration_list END) #f)
