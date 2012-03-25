@@ -20,7 +20,7 @@
 
   (define adrop 'adrop)
   (define ptrop 'ptrop)
-  (define pluop 'pluop)
+  (define valop 'valop)
   (define negop 'negop)
   (define comop 'comop)
   (define notop 'notop)
@@ -28,6 +28,32 @@
   (define stmts 'stmts)
   (define func 'func)
   (define skip 'skip)
+
+  (define mulop 'mulop)
+  (define divop 'divop)
+  (define modop 'modop)
+  (define addop 'addop)
+  (define subop 'subop)
+  (define lefop 'lefop)
+  (define rigop 'rigop)
+  (define lesop 'lesop)
+  (define greop 'greop)
+  (define leqop 'leqop)
+  (define geqop 'geqop)
+  (define equop 'equop)
+  (define neqop 'neqop)
+  (define ampop 'ampop)
+  (define xorop 'xorop)
+  (define pipop 'pipop)
+  (define andop 'andop)
+  (define or_op 'or_op)
+  (define terop 'terop)
+
+
+
+
+
+
 
   (define cur_sym_tab (new_symbol_table #f))
 
@@ -84,7 +110,7 @@
         (unary_operator 
           ((AMPERSAND   ) adrop )
           ((ASTERISK    ) ptrop )
-          ((PLUS        ) pluop )
+          ((PLUS        ) valop )
           ((MINUS       ) negop )
           ((TILDE       ) comop )
           ((EXCLAMATION ) notop ))
@@ -94,56 +120,56 @@
           ((LB type_name RB cast_expression ) #f ))
 
         (multiplicative_expression
-          ((cast_expression                                    ) $1 )
-          ((multiplicative_expression ASTERISK cast_expression ) #f )
-          ((multiplicative_expression DIV cast_expression      ) #f )
-          ((multiplicative_expression MODULO cast_expression   ) #f ))
+          ((cast_expression                                    ) $1                )
+          ((multiplicative_expression ASTERISK cast_expression ) (tree mulop $1 $3 ))
+          ((multiplicative_expression DIV cast_expression      ) (tree divop $1 $3 ))
+          ((multiplicative_expression MODULO cast_expression   ) (tree modop $1 $3 )))
 
         (additive_expression 
-          ((multiplicative_expression                           ) $1 )
-          ((additive_expression PLUS multiplicative_expression  ) #f )
-          ((additive_expression MINUS multiplicative_expression ) #f ))
+          ((multiplicative_expression                           ) $1                )
+          ((additive_expression PLUS multiplicative_expression  ) (tree addop $1 $3 ))
+          ((additive_expression MINUS multiplicative_expression ) (tree subop $1 $3 )))
 
         (shift_expression 
-          ((additive_expression                           ) $1 )
-          ((shift_expression LEFT_OP additive_expression  ) #f )
-          ((shift_expression RIGHT_OP additive_expression ) #f ))
+          ((additive_expression                           ) $1                )
+          ((shift_expression LEFT_OP additive_expression  ) (tree lefop $1 $3 ))
+          ((shift_expression RIGHT_OP additive_expression ) (tree rigop $1 $3 )))
 
         (relational_expression
-          ((shift_expression                               ) $1 )
-          ((relational_expression LESS shift_expression    ) #f )
-          ((relational_expression GREATER shift_expression ) #f )
-          ((relational_expression LE_OP shift_expression   ) #f )
-          ((relational_expression GE_OP shift_expression   ) #f ))
+          ((shift_expression                               ) $1                )
+          ((relational_expression LESS shift_expression    ) (tree lesop $1 $3 ))
+          ((relational_expression GREATER shift_expression ) (tree greop $1 $3 ))
+          ((relational_expression LE_OP shift_expression   ) (tree leqop $1 $3 ))
+          ((relational_expression GE_OP shift_expression   ) (tree geqop $1 $3 )))
 
         (equality_expression 
-          ((relational_expression                           ) $1 )
-          ((equality_expression EQ_OP relational_expression ) #f )
-          ((equality_expression NE_OP relational_expression ) #f ))
+          ((relational_expression                           ) $1                )
+          ((equality_expression EQ_OP relational_expression ) (tree equop $1 $3 ))
+          ((equality_expression NE_OP relational_expression ) (tree neqop $1 $3 )))
 
         (and_expression 
-          ((equality_expression                          ) $1 )
-          ((and_expression AMPERSAND equality_expression ) #f ))
+          ((equality_expression                          ) $1                )
+          ((and_expression AMPERSAND equality_expression ) (tree ampop $1 $3 )))
 
         (exclusive_or_expression 
-          ((and_expression                               ) $1 )
-          ((exclusive_or_expression CARET and_expression ) #f ))
+          ((and_expression                               ) $1                )
+          ((exclusive_or_expression CARET and_expression ) (tree xorop $1 $3 )))
 
         (inclusive_or_expression 
-          ((exclusive_or_expression                              ) $1 )
-          ((inclusive_or_expression PIPE exclusive_or_expression ) #f ))
+          ((exclusive_or_expression                              ) $1                )
+          ((inclusive_or_expression PIPE exclusive_or_expression ) (tree pipop $1 $3 )))
 
         (logical_and_expression 
-          ((inclusive_or_expression                               ) $1 )
-          ((logical_and_expression AND_OP inclusive_or_expression ) #f ))
+          ((inclusive_or_expression                               ) $1                )
+          ((logical_and_expression AND_OP inclusive_or_expression ) (tree andop $1 $3 )))
 
         (logical_or_expression 
-          ((logical_and_expression                             ) $1 )
-          ((logical_or_expression OR_OP logical_and_expression ) #f ))
+          ((logical_and_expression                             ) $1                )
+          ((logical_or_expression OR_OP logical_and_expression ) (tree or_op $1 $3 )))
 
         (conditional_expression 
-          ((logical_or_expression                                                      ) $1 )
-          ((logical_or_expression QUESTIONMARK expression COLON conditional_expression ) #f ))
+          ((logical_or_expression                                                      ) $1                   )
+          ((logical_or_expression QUESTIONMARK expression COLON conditional_expression ) (tree terop $1 $3 $5 )))
 
         (assignment_expression 
           ((conditional_expression                                     ) $1              )
