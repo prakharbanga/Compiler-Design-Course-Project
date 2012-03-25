@@ -2,6 +2,7 @@
   (provide objc-parser)
 
   (require parser-tools/yacc
+           "symbol_table.rkt"
            "lexer.rkt")
 
   (define objc-parser
@@ -10,7 +11,6 @@
       (end EOF)
       (error void)
       (tokens value-tokens op)
-      (debug "debug")
       (grammar
         (exp 
           ((translation_unit) #f))
@@ -93,17 +93,17 @@
           ((conditional_expression) #f) 
           ((unary_expression assignment_operator assignment_expression) #f))
         (assignment_operator
-          ((ASSIGN) #f)
-          ((MUL_ASSIGN) #f)
-          ((DIV_ASSIGN) #f)
-          ((MOD_ASSIGN) #f)
-          ((ADD_ASSIGN) #f)
-          ((SUB_ASSIGN) #f)
-          ((LEFT_ASSIGN) #f)
-          ((RIGHT_ASSIGN) #f)
-          ((AND_ASSIGN) #f)
-          ((XOR_ASSIGN) #f)
-          ((OR_ASSIGN) #f))
+          ((ASSIGN) "=")
+          ((MUL_ASSIGN) "*=")
+          ((DIV_ASSIGN) "/=")
+          ((MOD_ASSIGN) "%=")
+          ((ADD_ASSIGN) "+=")
+          ((SUB_ASSIGN) "-=")
+          ((LEFT_ASSIGN) "<<=")
+          ((RIGHT_ASSIGN) ">>=")
+          ((AND_ASSIGN) "&=")
+          ((XOR_ASSIGN) "^=")
+          ((OR_ASSIGN) "|="))
         (expression 
           ((assignment_expression) #f) 
           ((expression COMMA assignment_expression) #f))

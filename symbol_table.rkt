@@ -1,5 +1,5 @@
 (module symbol_table racket
-  (provide new_symbol_table insert lookup)
+  (provide new_symbol_table insert! lookup)
 
   (struct symbol_table (parent table))
 
@@ -9,8 +9,8 @@
   (define (insert! sym_tab lexeme attrs)
     (let ([tab (symbol_table-table sym_tab)])
       (if (hash-has-key? tab lexeme) 
-        (begin (hash-set! tab lexeme attrs) #t)
-        #f)))
+        #f
+        (begin (hash-set! tab lexeme attrs) #t))))
 
   (define (lookup sym_tab lexeme)
     (hash-ref (symbol_table-table sym_tab) lexeme
