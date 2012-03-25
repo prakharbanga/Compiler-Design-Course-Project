@@ -1,0 +1,1 @@
+("5.2" ("d2f97f43c574ce9c4c8539f50a3da667c5c77f31" . "30705afb23707da09889a4c8b53bb66657feb996") (collects #"errortrace" #"errortrace-key.rkt") (collects #"racket" #"main.rkt") #"/home/prakhar/Documents/Compiler-Design-Course-Project/tokens.rkt" (collects #"parser-tools" #"lex-sre.rkt") (collects #"parser-tools" #"lex.rkt"))

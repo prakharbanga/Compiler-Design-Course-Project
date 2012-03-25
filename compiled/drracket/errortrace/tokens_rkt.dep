@@ -1,0 +1,1 @@
+("5.2" ("cc15b14c2c2a24e7f0387c7827e35226fba52543" . "0cb66f31f7dd9b03b2c1ad840751e91835778fe3") (collects #"errortrace" #"errortrace-key.rkt") (collects #"racket" #"main.rkt") (collects #"parser-tools" #"lex.rkt"))

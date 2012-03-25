@@ -6,8 +6,11 @@
   (define (new_symbol_table parent)
     (symbol_table parent (make-hash)))
 
-  (define (insert sym_tab lexeme attrs)
-    (hash-set! (symbol_table-table sym_tab) lexeme attrs))
+  (define (insert! sym_tab lexeme attrs)
+    (let ([tab (symbol_table-table sym_tab)])
+      (if (hash-has-key? tab lexeme) 
+        (begin (hash-set! tab lexeme attrs) #t)
+        #f)))
 
   (define (lookup sym_tab lexeme)
     (hash-ref (symbol_table-table sym_tab) lexeme

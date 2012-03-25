@@ -12,8 +12,13 @@
       (tokens value-tokens op)
       (debug "debug")
       (grammar
-        (exp ((translation_unit) #f))
-        (primary_expression ((IDENTIFIER) #f) ((CONSTANT) #f) ((STRING_LITERAL) #f) ((LB expression RB) #f))
+        (exp 
+          ((translation_unit) #f))
+        (primary_expression 
+          ((IDENTIFIER) #f) 
+          ((CONSTANT) #f) 
+          ((STRING_LITERAL) #f) 
+          ((LB expression RB) #f))
         (postfix_expression
           ((primary_expression) #f)
           ((postfix_expression LSB expression RSB) #f)
@@ -23,7 +28,9 @@
           ((postfix_expression PTR_OP IDENTIFIER) #f)
           ((postfix_expression INC_OP) #f)
           ((postfix_expression DEC_OP) #f))
-        (argument_expression_list ((assignment_expression) #f) ((argument_expression_list COMMA assignment_expression) #f))
+        (argument_expression_list 
+          ((assignment_expression) #f) 
+          ((argument_expression_list COMMA assignment_expression) #f))
         (unary_expression
           ((postfix_expression) #f)
           ((INC_OP unary_expression) #f)
@@ -31,29 +38,60 @@
           ((unary_operator cast_expression) #f)
           ((SIZEOF unary_expression) #f)
           ((SIZEOF LB type_name RB) #f))
-        (unary_operator ((AMPERSAND) #f) ((ASTERISK) #f) ((PLUS) #f) ((MINUS) #f) ((TILDE) #f) ((EXCLAMATION) #f))
-        (cast_expression ((unary_expression) #f) ((LB type_name RB cast_expression) #f))
+        (unary_operator 
+          ((AMPERSAND) #f) 
+          ((ASTERISK) #f) 
+          ((PLUS) #f) 
+          ((MINUS) #f) 
+          ((TILDE) #f) 
+          ((EXCLAMATION) #f))
+        (cast_expression 
+          ((unary_expression) #f) 
+          ((LB type_name RB cast_expression) #f))
         (multiplicative_expression
           ((cast_expression) #f)
           ((multiplicative_expression ASTERISK cast_expression) #f)
           ((multiplicative_expression DIV cast_expression) #f)
           ((multiplicative_expression MODULO cast_expression) #f))
-        (additive_expression ((multiplicative_expression) #f) ((additive_expression PLUS multiplicative_expression) #f) ((additive_expression MINUS multiplicative_expression) #f))
-        (shift_expression ((additive_expression) #f) ((shift_expression LEFT_OP additive_expression) #f) ((shift_expression RIGHT_OP additive_expression) #f))
+        (additive_expression 
+          ((multiplicative_expression) #f) 
+          ((additive_expression PLUS multiplicative_expression) #f) 
+          ((additive_expression MINUS multiplicative_expression) #f))
+        (shift_expression 
+          ((additive_expression) #f) 
+          ((shift_expression LEFT_OP additive_expression) #f) 
+          ((shift_expression RIGHT_OP additive_expression) #f))
         (relational_expression
           ((shift_expression) #f)
           ((relational_expression LESS shift_expression) #f)
           ((relational_expression GREATER shift_expression) #f)
           ((relational_expression LE_OP shift_expression) #f)
           ((relational_expression GE_OP shift_expression) #f))
-        (equality_expression ((relational_expression) #f) ((equality_expression EQ_OP relational_expression) #f) ((equality_expression NE_OP relational_expression) #f))
-        (and_expression ((equality_expression) #f) ((and_expression AMPERSAND equality_expression) #f))
-        (exclusive_or_expression ((and_expression) #f) ((exclusive_or_expression CARET and_expression) #f))
-        (inclusive_or_expression ((exclusive_or_expression) #f) ((inclusive_or_expression PIPE exclusive_or_expression) #f))
-        (logical_and_expression ((inclusive_or_expression) #f) ((logical_and_expression AND_OP inclusive_or_expression) #f))
-        (logical_or_expression ((logical_and_expression) #f) ((logical_or_expression OR_OP logical_and_expression) #f))
-        (conditional_expression ((logical_or_expression) #f) ((logical_or_expression QUESTIONMARK expression COLON conditional_expression) #f))
-        (assignment_expression ((conditional_expression) #f) ((unary_expression assignment_operator assignment_expression) #f))
+        (equality_expression 
+          ((relational_expression) #f) 
+          ((equality_expression EQ_OP relational_expression) #f) 
+          ((equality_expression NE_OP relational_expression) #f))
+        (and_expression 
+          ((equality_expression) #f) 
+          ((and_expression AMPERSAND equality_expression) #f))
+        (exclusive_or_expression 
+          ((and_expression) #f) 
+          ((exclusive_or_expression CARET and_expression) #f))
+        (inclusive_or_expression 
+          ((exclusive_or_expression) #f) 
+          ((inclusive_or_expression PIPE exclusive_or_expression) #f))
+        (logical_and_expression 
+          ((inclusive_or_expression) #f) 
+          ((logical_and_expression AND_OP inclusive_or_expression) #f))
+        (logical_or_expression 
+          ((logical_and_expression) #f) 
+          ((logical_or_expression OR_OP logical_and_expression) #f))
+        (conditional_expression 
+          ((logical_or_expression) #f) 
+          ((logical_or_expression QUESTIONMARK expression COLON conditional_expression) #f))
+        (assignment_expression 
+          ((conditional_expression) #f) 
+          ((unary_expression assignment_operator assignment_expression) #f))
         (assignment_operator
           ((ASSIGN) #f)
           ((MUL_ASSIGN) #f)
@@ -66,9 +104,15 @@
           ((AND_ASSIGN) #f)
           ((XOR_ASSIGN) #f)
           ((OR_ASSIGN) #f))
-        (expression ((assignment_expression) #f) ((expression COMMA assignment_expression) #f))
-        (constant_expression ((conditional_expression) #f))
-        (declaration ((declaration_specifiers SEMICOLON) #f) ((type_declaration SEMICOLON) #f) ((declaration_specifiers init_declarator_list SEMICOLON) #f))
+        (expression 
+          ((assignment_expression) #f) 
+          ((expression COMMA assignment_expression) #f))
+        (constant_expression 
+          ((conditional_expression) #f))
+        (declaration 
+          ((declaration_specifiers SEMICOLON) #f) 
+          ((type_declaration SEMICOLON) #f) 
+          ((declaration_specifiers init_declarator_list SEMICOLON) #f))
         (declaration_specifiers
           ((storage_class_specifier) #f)
           ((storage_class_specifier declaration_specifiers) #f)
@@ -82,12 +126,25 @@
           ((declspec type_specifier declaration_specifiers) #f)
           ((declspec type_qualifier) #f)
           ((declspec type_qualifier declaration_specifiers) #f))
-        (init_declarator_list ((init_declarator) #f) ((init_declarator_list COMMA init_declarator) #f))
-        (init_declarator ((declarator) #f) ((declarator ASSIGN initializer) #f))
-        (declspec_type ((DLLIMPORT) #f) ((DLLEXPORT) #f))
-        (declspec ((DECLSPEC LB declspec_type RB) #f))
-        (storage_class_specifier ((EXTERN) #f) ((STATIC) #f) ((AUTO) #f) ((REGISTER) #f))
-        (type_declarator ((pointer type_direct_declarator) #f) ((type_direct_declarator) #f))
+        (init_declarator_list 
+          ((init_declarator) #f) 
+          ((init_declarator_list COMMA init_declarator) #f))
+        (init_declarator 
+          ((declarator) #f) 
+          ((declarator ASSIGN initializer) #f))
+        (declspec_type 
+          ((DLLIMPORT) #f) 
+          ((DLLEXPORT) #f))
+        (declspec 
+          ((DECLSPEC LB declspec_type RB) #f))
+        (storage_class_specifier 
+          ((EXTERN) #f) 
+          ((STATIC) #f) 
+          ((AUTO) #f) 
+          ((REGISTER) #f))
+        (type_declarator 
+          ((pointer type_direct_declarator) #f) 
+          ((type_direct_declarator) #f))
         (type_direct_declarator
           ((IDENTIFIER) #f)
           ((LB type_declarator RB) #f)
@@ -96,7 +153,8 @@
           ((type_direct_declarator LB parameter_type_list RB) #f)
           ((type_direct_declarator LB identifier_list RB) #f)
           ((type_direct_declarator LB RB) #f))
-        (type_declaration ((TYPEDEF declaration_specifiers type_declarator) #f))
+        (type_declaration 
+          ((TYPEDEF declaration_specifiers type_declarator) #f))
         (type_specifier
           ((VOID) #f)
           ((CHAR) #f)
@@ -109,18 +167,46 @@
           ((UNSIGNED) #f)
           ((struct_or_union_specifier) #f)
           ((enum_specifier) #f))
-        (struct_or_union_specifier ((struct_or_union IDENTIFIER LCB struct_declaration_list RCB) #f) ((struct_or_union LCB struct_declaration_list RCB) #f) ((struct_or_union IDENTIFIER) #f))
-        (struct_or_union ((STRUCT) #f) ((UNION) #f))
-        (struct_declaration_list ((struct_declaration) #f) ((struct_declaration_list struct_declaration) #f))
-        (struct_declaration ((specifier_qualifier_list struct_declarator_list SEMICOLON) #f))
-        (specifier_qualifier_list ((type_specifier specifier_qualifier_list) #f) ((type_specifier) #f) ((type_qualifier specifier_qualifier_list) #f) ((type_qualifier) #f))
-        (struct_declarator_list ((struct_declarator) #f) ((struct_declarator_list COMMA struct_declarator) #f))
-        (struct_declarator ((declarator) #f) ((COLON constant_expression) #f) ((declarator COLON constant_expression) #f))
-        (enum_specifier ((ENUM LCB enumerator_list RCB) #f) ((ENUM IDENTIFIER LCB enumerator_list RCB) #f) ((ENUM IDENTIFIER) #f))
-        (enumerator_list ((enumerator) #f) ((enumerator_list COMMA enumerator) #f))
-        (enumerator ((IDENTIFIER) #f) ((IDENTIFIER ASSIGN constant_expression) #f))
-        (type_qualifier ((CONST) #f) ((VOLATILE) #f))
-        (declarator ((pointer direct_declarator) #f) ((direct_declarator) #f))
+        (struct_or_union_specifier 
+          ((struct_or_union IDENTIFIER LCB struct_declaration_list RCB) #f) 
+          ((struct_or_union LCB struct_declaration_list RCB) #f) 
+          ((struct_or_union IDENTIFIER) #f))
+        (struct_or_union 
+          ((STRUCT) #f) 
+          ((UNION) #f))
+        (struct_declaration_list 
+          ((struct_declaration) #f) 
+          ((struct_declaration_list struct_declaration) #f))
+        (struct_declaration 
+          ((specifier_qualifier_list struct_declarator_list SEMICOLON) #f))
+        (specifier_qualifier_list 
+          ((type_specifier specifier_qualifier_list) #f) 
+          ((type_specifier) #f) 
+          ((type_qualifier specifier_qualifier_list) #f) 
+          ((type_qualifier) #f))
+        (struct_declarator_list 
+          ((struct_declarator) #f) 
+          ((struct_declarator_list COMMA struct_declarator) #f))
+        (struct_declarator 
+          ((declarator) #f) 
+          ((COLON constant_expression) #f) 
+          ((declarator COLON constant_expression) #f))
+        (enum_specifier 
+          ((ENUM LCB enumerator_list RCB) #f) 
+          ((ENUM IDENTIFIER LCB enumerator_list RCB) #f) 
+          ((ENUM IDENTIFIER) #f))
+        (enumerator_list 
+          ((enumerator) #f) 
+          ((enumerator_list COMMA enumerator) #f))
+        (enumerator 
+          ((IDENTIFIER) #f) 
+          ((IDENTIFIER ASSIGN constant_expression) #f))
+        (type_qualifier 
+          ((CONST) #f) 
+          ((VOLATILE) #f))
+        (declarator 
+          ((pointer direct_declarator) #f) 
+          ((direct_declarator) #f))
         (direct_declarator
           ((IDENTIFIER) #f)
           ((LB declarator RB) #f)
@@ -129,14 +215,34 @@
           ((direct_declarator LB parameter_type_list RB) #f)
           ((direct_declarator LB identifier_list RB) #f)
           ((direct_declarator LB RB) #f))
-        (pointer ((ASTERISK) #f) ((ASTERISK type_qualifier_list) #f) ((ASTERISK pointer) #f) ((ASTERISK type_qualifier_list pointer) #f))
-        (type_qualifier_list ((type_qualifier) #f) ((type_qualifier_list type_qualifier) #f))
-        (parameter_type_list ((parameter_list) #f) ((parameter_list COMMA ELLIPSIS) #f))
-        (parameter_list ((parameter_declaration) #f) ((parameter_list COMMA parameter_declaration) #f))
-        (parameter_declaration ((declaration_specifiers declarator) #f) ((declaration_specifiers abstract_declarator) #f) ((declaration_specifiers) #f))
-        (identifier_list ((IDENTIFIER) #f) ((identifier_list COMMA IDENTIFIER) #f))
-        (type_name ((specifier_qualifier_list) #f) ((specifier_qualifier_list abstract_declarator) #f))
-        (abstract_declarator ((pointer) #f) ((direct_abstract_declarator) #f) ((pointer direct_abstract_declarator) #f))
+        (pointer 
+          ((ASTERISK) #f) 
+          ((ASTERISK type_qualifier_list) #f) 
+          ((ASTERISK pointer) #f) 
+          ((ASTERISK type_qualifier_list pointer) #f))
+        (type_qualifier_list 
+          ((type_qualifier) #f) 
+          ((type_qualifier_list type_qualifier) #f))
+        (parameter_type_list 
+          ((parameter_list) #f) 
+          ((parameter_list COMMA ELLIPSIS) #f))
+        (parameter_list 
+          ((parameter_declaration) #f) 
+          ((parameter_list COMMA parameter_declaration) #f))
+        (parameter_declaration 
+          ((declaration_specifiers declarator) #f) 
+          ((declaration_specifiers abstract_declarator) #f) 
+          ((declaration_specifiers) #f))
+        (identifier_list 
+          ((IDENTIFIER) #f) 
+          ((identifier_list COMMA IDENTIFIER) #f))
+        (type_name 
+          ((specifier_qualifier_list) #f) 
+          ((specifier_qualifier_list abstract_declarator) #f))
+        (abstract_declarator 
+          ((pointer) #f) 
+          ((direct_abstract_declarator) #f) 
+          ((pointer direct_abstract_declarator) #f))
         (direct_abstract_declarator
           ((LB abstract_declarator RB) #f)
           ((LSB RSB) #f)
@@ -147,22 +253,56 @@
           ((LB parameter_type_list RB) #f)
           ((direct_abstract_declarator LB RB) #f)
           ((direct_abstract_declarator LB parameter_type_list RB) #f))
-        (initializer ((assignment_expression) #f) ((LCB initializer_list RCB) #f) ((LCB initializer_list COMMA RCB) #f))
-        (initializer_list ((initializer) #f) ((initializer_list COMMA initializer) #f))
-        (statement ((labeled_statement) #f) ((compound_statement) #f) ((expression_statement) #f) ((selection_statement) #f) ((iteration_statement) #f) ((jump_statement) #f))
-        (labeled_statement ((IDENTIFIER COLON statement) #f) ((CASE constant_expression COLON statement) #f) ((DEFAULT COLON statement) #f))
-        (compound_statement ((LCB RCB) #f) ((LCB statement_list RCB) #f) ((LCB declaration_list RCB) #f) ((LCB declaration_list statement_list RCB) #f))
-        (declaration_list ((declaration) #f) ((declaration_list declaration) #f))
-        (statement_list ((statement) #f) ((statement_list statement) #f))
-        (expression_statement ((SEMICOLON) #f) ((expression SEMICOLON) #f))
-        (selection_statement ((IF LB expression RB statement) #f) ((IF LB expression RB statement ELSE statement) #f) ((SWITCH LB expression RB statement) #f))
+        (initializer 
+          ((assignment_expression) #f) 
+          ((LCB initializer_list RCB) #f) 
+          ((LCB initializer_list COMMA RCB) #f))
+        (initializer_list 
+          ((initializer) #f) 
+          ((initializer_list COMMA initializer) #f))
+        (statement 
+          ((labeled_statement) #f) 
+          ((compound_statement) #f) 
+          ((expression_statement) #f) 
+          ((selection_statement) #f) 
+          ((iteration_statement) #f) 
+          ((jump_statement) #f))
+        (labeled_statement 
+          ((IDENTIFIER COLON statement) #f) 
+          ((CASE constant_expression COLON statement) #f) 
+          ((DEFAULT COLON statement) #f))
+        (compound_statement 
+          ((LCB RCB) #f) 
+          ((LCB statement_list RCB) #f) 
+          ((LCB declaration_list RCB) #f) 
+          ((LCB declaration_list statement_list RCB) #f))
+        (declaration_list 
+          ((declaration) #f) 
+          ((declaration_list declaration) #f))
+        (statement_list 
+          ((statement) #f) 
+          ((statement_list statement) #f))
+        (expression_statement 
+          ((SEMICOLON) #f) 
+          ((expression SEMICOLON) #f))
+        (selection_statement 
+          ((IF LB expression RB statement) #f) 
+          ((IF LB expression RB statement ELSE statement) #f) 
+          ((SWITCH LB expression RB statement) #f))
         (iteration_statement
           ((WHILE LB expression RB statement) #f)
           ((DO statement WHILE LB expression RB SEMICOLON) #f)
           ((FOR LB expression_statement expression_statement RB statement) #f)
           ((FOR LB expression_statement expression_statement expression RB statement) #f))
-        (jump_statement ((GOTO IDENTIFIER SEMICOLON) #f) ((CONTINUE SEMICOLON) #f) ((BREAK SEMICOLON) #f) ((RETURN SEMICOLON) #f) ((RETURN expression SEMICOLON) #f))
-        (translation_unit ((external_declaration) #f) ((translation_unit external_declaration) #f))
+        (jump_statement 
+          ((GOTO IDENTIFIER SEMICOLON) #f) 
+          ((CONTINUE SEMICOLON) #f) 
+          ((BREAK SEMICOLON) #f) 
+          ((RETURN SEMICOLON) #f) 
+          ((RETURN expression SEMICOLON) #f))
+        (translation_unit 
+          ((external_declaration) #f) 
+          ((translation_unit external_declaration) #f))
         (external_declaration
           ((function_definition) #f)
           ((declaration) #f)
@@ -188,26 +328,52 @@
         (category_interface
           ((INTERFACE class_name LB category_name RB interface_declaration_list END) #f)
           ((INTERFACE class_name LB category_name RB protocol_reference_list interface_declaration_list END) #f))
-        (category_implementation ((IMPLEMENTATION class_name LB category_name RB implementation_definition_list END) #f))
-        (protocol_declaration ((PROTOCOL protocol_name interface_declaration_list END) #f) ((PROTOCOL protocol_name protocol_reference_list interface_declaration_list END) #f))
-        (class_declaration_list ((CLASS class_list) #f))
-        (class_list ((class_name) #f) ((class_list COMMA class_name) #f))
-        (protocol_reference_list ((LESS protocol_list GREATER) #f))
-        (protocol_list ((protocol_name) #f) ((protocol_list COMMA protocol_name) #f))
-        (class_name ((IDENTIFIER) #f))
-        (superclass_name ((IDENTIFIER) #f))
-        (category_name ((IDENTIFIER) #f))
-        (protocol_name ((IDENTIFIER) #f))
+        (category_implementation 
+          ((IMPLEMENTATION class_name LB category_name RB implementation_definition_list END) #f))
+        (protocol_declaration 
+          ((PROTOCOL protocol_name interface_declaration_list END) #f) 
+          ((PROTOCOL protocol_name protocol_reference_list interface_declaration_list END) #f))
+        (class_declaration_list 
+          ((CLASS class_list) #f))
+        (class_list 
+          ((class_name) #f) 
+          ((class_list COMMA class_name) #f))
+        (protocol_reference_list 
+          ((LESS protocol_list GREATER) #f))
+        (protocol_list 
+          ((protocol_name) #f) 
+          ((protocol_list COMMA protocol_name) #f))
+        (class_name 
+          ((IDENTIFIER) #f))
+        (superclass_name 
+          ((IDENTIFIER) #f))
+        (category_name 
+          ((IDENTIFIER) #f))
+        (protocol_name 
+          ((IDENTIFIER) #f))
         (instance_variables
           ((LCB struct_declaration_list RCB) #f)
           ((LCB visibility_specification struct_declaration_list RCB) #f)
           ((LCB struct_declaration_list instance_variables RCB) #f)
           ((LCB visibility_specification struct_declaration_list instance_variables RCB) #f))
-        (visibility_specification ((PRIVATE) #f) ((PUBLIC) #f) ((PROTECTED) #f))
-        (interface_declaration_list ((declaration) #f) ((method_declaration) #f) ((interface_declaration_list declaration) #f) ((interface_declaration_list method_declaration) #f))
-        (method_declaration ((class_method_declaration) #f) ((instance_method_declaration) #f))
-        (class_method_declaration ((PLUS method_selector SEMICOLON) #f) ((PLUS method_type method_selector SEMICOLON) #f))
-        (instance_method_declaration ((MINUS method_selector SEMICOLON) #f) ((MINUS method_type method_selector SEMICOLON) #f))
+        (visibility_specification 
+          ((PRIVATE) #f) 
+          ((PUBLIC) #f) 
+          ((PROTECTED) #f))
+        (interface_declaration_list 
+          ((declaration) #f) 
+          ((method_declaration) #f) 
+          ((interface_declaration_list declaration) #f) 
+          ((interface_declaration_list method_declaration) #f))
+        (method_declaration 
+          ((class_method_declaration) #f) 
+          ((instance_method_declaration) #f))
+        (class_method_declaration 
+          ((PLUS method_selector SEMICOLON) #f) 
+          ((PLUS method_type method_selector SEMICOLON) #f))
+        (instance_method_declaration 
+          ((MINUS method_selector SEMICOLON) #f) 
+          ((MINUS method_type method_selector SEMICOLON) #f))
         (implementation_definition_list
           ((function_definition) #f)
           ((declaration) #f)
@@ -215,7 +381,9 @@
           ((implementation_definition_list function_definition) #f)
           ((implementation_definition_list declaration) #f)
           ((implementation_definition_list method_definition) #f))
-        (method_definition ((class_method_definition) #f) ((instance_method_definition) #f))
+        (method_definition 
+          ((class_method_definition) #f) 
+          ((instance_method_definition) #f))
         (class_method_definition
           ((PLUS method_selector compound_statement) #f)
           ((PLUS method_type method_selector compound_statement) #f)
@@ -226,9 +394,22 @@
           ((MINUS method_type method_selector compound_statement) #f)
           ((MINUS method_selector declaration_list compound_statement) #f)
           ((MINUS method_type method_selector declaration_list compound_statement) #f))
-        (method_selector ((unary_selector) #f) ((keyword_selector) #f) ((keyword_selector COMMA ELLIPSIS) #f) ((keyword_selector COMMA parameter_type_list) #f))
-        (unary_selector ((selector) #f))
-        (keyword_selector ((keyword_declarator) #f) ((keyword_selector keyword_declarator) #f))
-        (keyword_declarator ((COLON IDENTIFIER) #f) ((COLON method_type IDENTIFIER) #f) ((selector COLON IDENTIFIER) #f) ((selector COLON method_type IDENTIFIER) #f))
-        (selector ((IDENTIFIER) #f))
-        (method_type ((LB type_name RB) #f))))))
+        (method_selector 
+          ((unary_selector) #f) 
+          ((keyword_selector) #f) 
+          ((keyword_selector COMMA ELLIPSIS) #f) 
+          ((keyword_selector COMMA parameter_type_list) #f))
+        (unary_selector 
+          ((selector) #f))
+        (keyword_selector 
+          ((keyword_declarator) #f) 
+          ((keyword_selector keyword_declarator) #f))
+        (keyword_declarator 
+          ((COLON IDENTIFIER) #f) 
+          ((COLON method_type IDENTIFIER) #f) 
+          ((selector COLON IDENTIFIER) #f) 
+          ((selector COLON method_type IDENTIFIER) #f))
+        (selector 
+          ((IDENTIFIER) #f))
+        (method_type 
+          ((LB type_name RB) #f))))))
