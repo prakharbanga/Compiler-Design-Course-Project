@@ -67,51 +67,51 @@
           ((TILDE) #f) 
           ((EXCLAMATION) #f))
         (cast_expression 
-          ((unary_expression) #f) 
+          ((unary_expression) $1) 
           ((LB type_name RB cast_expression) #f))
         (multiplicative_expression
-          ((cast_expression) #f)
+          ((cast_expression) $1)
           ((multiplicative_expression ASTERISK cast_expression) #f)
           ((multiplicative_expression DIV cast_expression) #f)
           ((multiplicative_expression MODULO cast_expression) #f))
         (additive_expression 
-          ((multiplicative_expression) #f) 
+          ((multiplicative_expression) $1) 
           ((additive_expression PLUS multiplicative_expression) #f) 
           ((additive_expression MINUS multiplicative_expression) #f))
         (shift_expression 
-          ((additive_expression) #f) 
+          ((additive_expression) $1) 
           ((shift_expression LEFT_OP additive_expression) #f) 
           ((shift_expression RIGHT_OP additive_expression) #f))
         (relational_expression
-          ((shift_expression) #f)
+          ((shift_expression) $1)
           ((relational_expression LESS shift_expression) #f)
           ((relational_expression GREATER shift_expression) #f)
           ((relational_expression LE_OP shift_expression) #f)
           ((relational_expression GE_OP shift_expression) #f))
         (equality_expression 
-          ((relational_expression) #f) 
+          ((relational_expression) $1) 
           ((equality_expression EQ_OP relational_expression) #f) 
           ((equality_expression NE_OP relational_expression) #f))
         (and_expression 
-          ((equality_expression) #f) 
+          ((equality_expression) $1) 
           ((and_expression AMPERSAND equality_expression) #f))
         (exclusive_or_expression 
-          ((and_expression) #f) 
+          ((and_expression) $1) 
           ((exclusive_or_expression CARET and_expression) #f))
         (inclusive_or_expression 
-          ((exclusive_or_expression) #f) 
+          ((exclusive_or_expression) $1) 
           ((inclusive_or_expression PIPE exclusive_or_expression) #f))
         (logical_and_expression 
-          ((inclusive_or_expression) #f) 
+          ((inclusive_or_expression) $1) 
           ((logical_and_expression AND_OP inclusive_or_expression) #f))
         (logical_or_expression 
-          ((logical_and_expression) #f) 
+          ((logical_and_expression) $1) 
           ((logical_or_expression OR_OP logical_and_expression) #f))
         (conditional_expression 
-          ((logical_or_expression) #f) 
+          ((logical_or_expression) $1) 
           ((logical_or_expression QUESTIONMARK expression COLON conditional_expression) #f))
         (assignment_expression 
-          ((conditional_expression) #f) 
+          ((conditional_expression) $1) 
           ((unary_expression assignment_operator assignment_expression)
            (assgn $2 $1 $3)))
         (assignment_operator
