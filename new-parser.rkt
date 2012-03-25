@@ -36,12 +36,12 @@
         (exp 
           ((translation_unit) $1))
         (primary_expression 
-          ((identifier) #f) 
+          ((identifier) $1) 
           ((CONSTANT) #f) 
           ((STRING_LITERAL) #f) 
           ((LB expression RB) #f))
         (postfix_expression
-          ((primary_expression) #f)
+          ((primary_expression) $1)
           ((postfix_expression LSB expression RSB) #f)
           ((postfix_expression LB RB) #f)
           ((postfix_expression LB argument_expression_list RB) #f)
@@ -53,7 +53,7 @@
           ((assignment_expression) #f) 
           ((argument_expression_list COMMA assignment_expression) #f))
         (unary_expression
-          ((postfix_expression) #f)
+          ((postfix_expression) $1)
           ((INC_OP unary_expression) #f)
           ((DEC_OP unary_expression) #f)
           ((unary_operator cast_expression) #f)
@@ -112,21 +112,22 @@
           ((logical_or_expression QUESTIONMARK expression COLON conditional_expression) #f))
         (assignment_expression 
           ((conditional_expression) #f) 
-          ((unary_expression assignment_operator assignment_expression) #f))
+          ((unary_expression assignment_operator assignment_expression)
+           (assgn $2 $1 $3)))
         (assignment_operator
-          ((ASSIGN) #f)
-          ((MUL_ASSIGN)  #f)
-          ((DIV_ASSIGN)  #f)
-          ((MOD_ASSIGN)  #f)
-          ((ADD_ASSIGN)  #f)
-          ((SUB_ASSIGN)  #f)
-          ((LEFT_ASSIGN)  #f)
-          ((RIGHT_ASSIGN)  #f)
-          ((AND_ASSIGN)  #f)
-          ((XOR_ASSIGN)  #f)
-          ((OR_ASSIGN) #f))
+          ((ASSIGN) no_op_assgn)
+          ((MUL_ASSIGN) mul_op_assgn)
+          ((DIV_ASSIGN) div_op_assgn)
+          ((MOD_ASSIGN) mod_op_assgn)
+          ((ADD_ASSIGN) add_op_assgn)
+          ((SUB_ASSIGN) sub_op_assgn)
+          ((LEFT_ASSIGN) lef_op_assgn)
+          ((RIGHT_ASSIGN) rig_op_assgn)
+          ((AND_ASSIGN) and_op_assgn)
+          ((XOR_ASSIGN) xor_op_assgn)
+          ((OR_ASSIGN) or_op_assgn))
         (expression 
-          ((assignment_expression) #f) 
+          ((assignment_expression) $1) 
           ((expression COMMA assignment_expression) #f))
         (constant_expression 
           ((conditional_expression) #f))
@@ -284,7 +285,7 @@
         (statement 
           ((labeled_statement) #f) 
           ((compound_statement) #f) 
-          ((expression_statement) #f) 
+          ((expression_statement) $1) 
           ((selection_statement) #f) 
           ((iteration_statement) #f) 
           ((jump_statement) #f))
@@ -294,18 +295,18 @@
           ((DEFAULT COLON statement) #f))
         (compound_statement 
           ((LCB RCB) #f) 
-          ((LCB statement_list RCB) #f) 
+          ((LCB statement_list RCB) $2) 
           ((LCB declaration_list RCB) #f) 
           ((LCB declaration_list statement_list RCB) #f))
         (declaration_list 
           ((declaration) #f) 
           ((declaration_list declaration) #f))
         (statement_list 
-          ((statement) #f) 
+          ((statement) $1) 
           ((statement_list statement) #f))
         (expression_statement 
           ((SEMICOLON) #f) 
-          ((expression SEMICOLON) #f))
+          ((expression SEMICOLON) $1))
         (selection_statement 
           ((IF LB expression RB statement) #f) 
           ((IF LB expression RB statement ELSE statement) #f) 
