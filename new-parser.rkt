@@ -1,9 +1,29 @@
 (module parser racket
-  (provide objc-parser)
+  (provide (all-defined-out))
 
   (require parser-tools/yacc
            "symbol_table.rkt"
            "lexer.rkt")
+
+  ; This is ugly, but couldn't find any other way to get multiple global constants
+  (define no_op_assgn 'noop)
+  (define mul_op_assgn 'mulop)
+  (define div_op_assgn 'divop)
+  (define mod_op_assgn 'modop)
+  (define add_op_assgn 'addop)
+  (define sub_op_assgn 'subop)
+  (define lef_op_assgn 'lefop)
+  (define rig_op_assgn 'rigop)
+  (define and_op_assgn 'andop)
+  (define xor_op_assgn 'xorop)
+  (define or_op_assgn 'orop)
+  (define stmts 'stmts)
+
+  ; This is beautiful
+  (define-syntax-rule (assgn op op1 op2)
+                      (if (equal? op no_op_assgn)
+                        (list 'assgn (list op1 op2))
+                        (list 'assgn (list op1 (list op (list op1 op2))))))
 
   (define objc-parser
     (parser
@@ -15,7 +35,7 @@
         (exp 
           ((translation_unit) #f))
         (primary_expression 
-          ((IDENTIFIER) #f) 
+          ((identifier) #f) 
           ((CONSTANT) #f) 
           ((STRING_LITERAL) #f) 
           ((LB expression RB) #f))
@@ -24,8 +44,8 @@
           ((postfix_expression LSB expression RSB) #f)
           ((postfix_expression LB RB) #f)
           ((postfix_expression LB argument_expression_list RB) #f)
-          ((postfix_expression DOT IDENTIFIER) #f)
-          ((postfix_expression PTR_OP IDENTIFIER) #f)
+          ((postfix_expression DOT identifier) #f)
+          ((postfix_expression PTR_OP identifier) #f)
           ((postfix_expression INC_OP) #f)
           ((postfix_expression DEC_OP) #f))
         (argument_expression_list 
@@ -93,17 +113,17 @@
           ((conditional_expression) #f) 
           ((unary_expression assignment_operator assignment_expression) #f))
         (assignment_operator
-          ((ASSIGN) "=")
-          ((MUL_ASSIGN) "*=")
-          ((DIV_ASSIGN) "/=")
-          ((MOD_ASSIGN) "%=")
-          ((ADD_ASSIGN) "+=")
-          ((SUB_ASSIGN) "-=")
-          ((LEFT_ASSIGN) "<<=")
-          ((RIGHT_ASSIGN) ">>=")
-          ((AND_ASSIGN) "&=")
-          ((XOR_ASSIGN) "^=")
-          ((OR_ASSIGN) "|="))
+          ((ASSIGN) #f)
+          ((MUL_ASSIGN)  #f)
+          ((DIV_ASSIGN)  #f)
+          ((MOD_ASSIGN)  #f)
+          ((ADD_ASSIGN)  #f)
+          ((SUB_ASSIGN)  #f)
+          ((LEFT_ASSIGN)  #f)
+          ((RIGHT_ASSIGN)  #f)
+          ((AND_ASSIGN)  #f)
+          ((XOR_ASSIGN)  #f)
+          ((OR_ASSIGN) #f))
         (expression 
           ((assignment_expression) #f) 
           ((expression COMMA assignment_expression) #f))
@@ -146,7 +166,7 @@
           ((pointer type_direct_declarator) #f) 
           ((type_direct_declarator) #f))
         (type_direct_declarator
-          ((IDENTIFIER) #f)
+          ((identifier) #f)
           ((LB type_declarator RB) #f)
           ((type_direct_declarator LSB constant_expression RSB) #f)
           ((type_direct_declarator LSB RSB) #f)
@@ -168,9 +188,9 @@
           ((struct_or_union_specifier) #f)
           ((enum_specifier) #f))
         (struct_or_union_specifier 
-          ((struct_or_union IDENTIFIER LCB struct_declaration_list RCB) #f) 
+          ((struct_or_union identifier LCB struct_declaration_list RCB) #f) 
           ((struct_or_union LCB struct_declaration_list RCB) #f) 
-          ((struct_or_union IDENTIFIER) #f))
+          ((struct_or_union identifier) #f))
         (struct_or_union 
           ((STRUCT) #f) 
           ((UNION) #f))
@@ -193,14 +213,14 @@
           ((declarator COLON constant_expression) #f))
         (enum_specifier 
           ((ENUM LCB enumerator_list RCB) #f) 
-          ((ENUM IDENTIFIER LCB enumerator_list RCB) #f) 
-          ((ENUM IDENTIFIER) #f))
+          ((ENUM identifier LCB enumerator_list RCB) #f) 
+          ((ENUM identifier) #f))
         (enumerator_list 
           ((enumerator) #f) 
           ((enumerator_list COMMA enumerator) #f))
         (enumerator 
-          ((IDENTIFIER) #f) 
-          ((IDENTIFIER ASSIGN constant_expression) #f))
+          ((identifier) #f) 
+          ((identifier ASSIGN constant_expression) #f))
         (type_qualifier 
           ((CONST) #f) 
           ((VOLATILE) #f))
@@ -208,7 +228,7 @@
           ((pointer direct_declarator) #f) 
           ((direct_declarator) #f))
         (direct_declarator
-          ((IDENTIFIER) #f)
+          ((identifier) #f)
           ((LB declarator RB) #f)
           ((direct_declarator LSB constant_expression RSB) #f)
           ((direct_declarator LSB RSB) #f)
@@ -234,8 +254,8 @@
           ((declaration_specifiers abstract_declarator) #f) 
           ((declaration_specifiers) #f))
         (identifier_list 
-          ((IDENTIFIER) #f) 
-          ((identifier_list COMMA IDENTIFIER) #f))
+          ((identifier) #f) 
+          ((identifier_list COMMA identifier) #f))
         (type_name 
           ((specifier_qualifier_list) #f) 
           ((specifier_qualifier_list abstract_declarator) #f))
@@ -268,7 +288,7 @@
           ((iteration_statement) #f) 
           ((jump_statement) #f))
         (labeled_statement 
-          ((IDENTIFIER COLON statement) #f) 
+          ((identifier COLON statement) #f) 
           ((CASE constant_expression COLON statement) #f) 
           ((DEFAULT COLON statement) #f))
         (compound_statement 
@@ -295,7 +315,7 @@
           ((FOR LB expression_statement expression_statement RB statement) #f)
           ((FOR LB expression_statement expression_statement expression RB statement) #f))
         (jump_statement 
-          ((GOTO IDENTIFIER SEMICOLON) #f) 
+          ((GOTO identifier SEMICOLON) #f) 
           ((CONTINUE SEMICOLON) #f) 
           ((BREAK SEMICOLON) #f) 
           ((RETURN SEMICOLON) #f) 
@@ -344,13 +364,13 @@
           ((protocol_name) #f) 
           ((protocol_list COMMA protocol_name) #f))
         (class_name 
-          ((IDENTIFIER) #f))
+          ((identifier) #f))
         (superclass_name 
-          ((IDENTIFIER) #f))
+          ((identifier) #f))
         (category_name 
-          ((IDENTIFIER) #f))
+          ((identifier) #f))
         (protocol_name 
-          ((IDENTIFIER) #f))
+          ((identifier) #f))
         (instance_variables
           ((LCB struct_declaration_list RCB) #f)
           ((LCB visibility_specification struct_declaration_list RCB) #f)
@@ -405,11 +425,13 @@
           ((keyword_declarator) #f) 
           ((keyword_selector keyword_declarator) #f))
         (keyword_declarator 
-          ((COLON IDENTIFIER) #f) 
-          ((COLON method_type IDENTIFIER) #f) 
-          ((selector COLON IDENTIFIER) #f) 
-          ((selector COLON method_type IDENTIFIER) #f))
+          ((COLON identifier) #f) 
+          ((COLON method_type identifier) #f) 
+          ((selector COLON identifier) #f) 
+          ((selector COLON method_type identifier) #f))
         (selector 
+          ((identifier) #f))
+        (identifier
           ((IDENTIFIER) #f))
         (method_type 
           ((LB type_name RB) #f))))))
