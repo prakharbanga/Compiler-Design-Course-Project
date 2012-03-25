@@ -17,6 +17,14 @@
   (define and_op_assgn 'andop)
   (define xor_op_assgn 'xorop)
   (define or_op_assgn 'orop)
+
+  (define andop 'andop)
+  (define mulop 'mulop)
+  (define addop 'addop)
+  (define subop 'subop)
+  (define comop 'comop)
+  (define notop 'notop)
+
   (define stmts 'stmts)
   (define func 'func)
 
@@ -31,7 +39,7 @@
   (define-syntax tree 
     (syntax-rules ()
       [(tree a) (list a)]
-       [(tree a b ...) (list a (list b ...))]))
+      [(tree a b ...) (list a (list b ...))]))
 
 
   (define objc-parser
@@ -68,12 +76,12 @@
           ((SIZEOF unary_expression) #f)
           ((SIZEOF LB type_name RB) #f))
         (unary_operator 
-          ((AMPERSAND) #f) 
-          ((ASTERISK) #f) 
-          ((PLUS) #f) 
-          ((MINUS) #f) 
-          ((TILDE) #f) 
-          ((EXCLAMATION) #f))
+          ((AMPERSAND) andop) 
+          ((ASTERISK) mulop) 
+          ((PLUS) addop) 
+          ((MINUS) subop) 
+          ((TILDE) comop) 
+          ((EXCLAMATION) notop))
         (cast_expression 
           ((unary_expression) $1) 
           ((LB type_name RB cast_expression) #f))
