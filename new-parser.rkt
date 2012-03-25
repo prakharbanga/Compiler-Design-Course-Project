@@ -27,6 +27,7 @@
 
   (define stmts 'stmts)
   (define func 'func)
+  (define skip 'skip)
 
   (define cur_sym_tab (new_symbol_table #f))
 
@@ -382,8 +383,8 @@
           ((statement_list statement ) #f ))
 
         (expression_statement 
-          ((SEMICOLON            ) #f )
-          ((expression SEMICOLON ) $1 ))
+          ((SEMICOLON            ) skip )
+          ((expression SEMICOLON ) $1   ))
 
         (selection_statement 
           ((IF LB expression RB statement                ) #f )
