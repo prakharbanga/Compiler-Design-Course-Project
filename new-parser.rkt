@@ -6,17 +6,17 @@
            "lexer.rkt")
 
   ; This is ugly, but couldn't find any other way to get multiple global constants
-  (define no_op_assgn 'noop)
-  (define mul_op_assgn 'mulop)
-  (define div_op_assgn 'divop)
-  (define mod_op_assgn 'modop)
-  (define add_op_assgn 'addop)
-  (define sub_op_assgn 'subop)
-  (define lef_op_assgn 'lefop)
-  (define rig_op_assgn 'rigop)
-  (define and_op_assgn 'andop)
-  (define xor_op_assgn 'xorop)
-  (define or_op_assgn 'orop)
+  (define no__op_assgn 'no__op_assgn)
+  (define mul_op_assgn 'mul_op_assgn)
+  (define div_op_assgn 'div_op_assgn)
+  (define mod_op_assgn 'mod_op_assgn)
+  (define add_op_assgn 'add_op_assgn)
+  (define sub_op_assgn 'sub_op_assgn)
+  (define lef_op_assgn 'lef_op_assgn)
+  (define rig_op_assgn 'rig_op_assgn)
+  (define and_op_assgn 'and_op_assgn)
+  (define xor_op_assgn 'xor_op_assgn)
+  (define or__op_assgn 'or__op_assgn)
 
   (define andop 'andop)
   (define mulop 'mulop)
@@ -32,7 +32,7 @@
 
   ; This is beautiful
   (define-syntax-rule (assgn op op1 op2)
-                      (if (equal? op no_op_assgn)
+                      (if (equal? op no__op_assgn)
                         (list 'assgn (list op1 op2))
                         (list 'assgn (list op1 (list op (list op1 op2))))))
 
@@ -131,7 +131,7 @@
           ((unary_expression assignment_operator assignment_expression)
            (assgn $2 $1 $3)))
         (assignment_operator
-          ((ASSIGN) no_op_assgn)
+          ((ASSIGN) no__op_assgn)
           ((MUL_ASSIGN) mul_op_assgn)
           ((DIV_ASSIGN) div_op_assgn)
           ((MOD_ASSIGN) mod_op_assgn)
@@ -141,7 +141,7 @@
           ((RIGHT_ASSIGN) rig_op_assgn)
           ((AND_ASSIGN) and_op_assgn)
           ((XOR_ASSIGN) xor_op_assgn)
-          ((OR_ASSIGN) or_op_assgn))
+          ((OR_ASSIGN) or__op_assgn))
         (expression 
           ((assignment_expression) $1) 
           ((expression COMMA assignment_expression) (tree stmts $1 $3)))
