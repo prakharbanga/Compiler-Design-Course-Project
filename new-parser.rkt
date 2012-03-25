@@ -18,10 +18,10 @@
   (define xor_op_assgn 'xor_op_assgn)
   (define or__op_assgn 'or__op_assgn)
 
-  (define andop 'andop)
-  (define mulop 'mulop)
-  (define addop 'addop)
-  (define subop 'subop)
+  (define adrop 'adrop)
+  (define ptrop 'ptrop)
+  (define pluop 'pluop)
+  (define negop 'negop)
   (define comop 'comop)
   (define notop 'notop)
 
@@ -82,10 +82,10 @@
           ((SIZEOF LB type_name RB         ) #f ))
 
         (unary_operator 
-          ((AMPERSAND   ) andop )
-          ((ASTERISK    ) mulop )
-          ((PLUS        ) addop )
-          ((MINUS       ) subop )
+          ((AMPERSAND   ) adrop )
+          ((ASTERISK    ) ptrop )
+          ((PLUS        ) pluop )
+          ((MINUS       ) negop )
           ((TILDE       ) comop )
           ((EXCLAMATION ) notop ))
 
@@ -379,8 +379,8 @@
           ((declaration_list declaration ) #f ))
 
         (statement_list 
-          ((statement                ) $1 )
-          ((statement_list statement ) #f ))
+          ((statement                ) $1                )
+          ((statement_list statement ) (tree stmts $1 $2 )))
 
         (expression_statement 
           ((SEMICOLON            ) skip )
