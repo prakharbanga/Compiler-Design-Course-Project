@@ -32,6 +32,7 @@
   (define stmts 'stmts)
   (define func 'func)
   (define skip 'skip)
+  (define cast 'cast)
 
   ; Arithmetic operators
   (define mulop 'mulop)
@@ -53,6 +54,17 @@
   (define andop 'andop)
   (define or_op 'or_op)
   (define terop 'terop)
+
+  ; Basic types
+  (define voitype  'voitype)
+  (define chatype  'chatype)
+  (define shotype  'shotype)
+  (define inttype  'inttype)
+  (define lontype  'lontype)
+  (define flotype  'flotype)
+  (define doutype  'doutype)
+  (define sigtype  'sigtype)
+  (define unstype  'unstype)
 
   ; The symbol table
   (define cur_sym_tab (new_symbol_table #f))
@@ -118,7 +130,7 @@
 
         (cast_expression 
           ((unary_expression                ) $1 )
-          ((LB type_name RB cast_expression ) #f ))
+          ((LB type_name RB cast_expression ) (tree cast $2 $4)))
 
         (multiplicative_expression
           ((cast_expression                                    ) $1                )
@@ -253,15 +265,15 @@
           ((TYPEDEF declaration_specifiers type_declarator ) #f ))
 
         (type_specifier
-          ((VOID                      ) #f )
-          ((CHAR                      ) #f )
-          ((SHORT                     ) #f )
-          ((INT                       ) #f )
-          ((LONG                      ) #f )
-          ((FLOAT                     ) #f )
-          ((DOUBLE                    ) #f )
-          ((SIGNED                    ) #f )
-          ((UNSIGNED                  ) #f )
+          ((VOID                      ) voitype )
+          ((CHAR                      ) chatype )
+          ((SHORT                     ) shotype )
+          ((INT                       ) inttype )
+          ((LONG                      ) lontype )
+          ((FLOAT                     ) flotype )
+          ((DOUBLE                    ) doutype )
+          ((SIGNED                    ) sigtype )
+          ((UNSIGNED                  ) unstype )
           ((struct_or_union_specifier ) #f )
           ((enum_specifier            ) #f ))
 
@@ -283,7 +295,7 @@
 
         (specifier_qualifier_list 
           ((type_specifier specifier_qualifier_list ) #f )
-          ((type_specifier                          ) #f )
+          ((type_specifier                          ) $1 )
           ((type_qualifier specifier_qualifier_list ) #f )
           ((type_qualifier                          ) #f ))
 
@@ -354,7 +366,7 @@
           ((identifier_list COMMA identifier ) #f ))
 
         (type_name 
-          ((specifier_qualifier_list                     ) #f )
+          ((specifier_qualifier_list                     ) $1 )
           ((specifier_qualifier_list abstract_declarator ) #f ))
 
         (abstract_declarator 
