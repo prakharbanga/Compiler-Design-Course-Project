@@ -66,9 +66,6 @@
   (define sigtype  'sigtype)
   (define unstype  'unstype)
 
-  ; The symbol table
-  (define cur_sym_tab (new_symbol_table #f))
-
   ; Some macros
   (define-syntax-rule (assgn op op1 op2)
                       (if (equal? op no__op_assgn)
