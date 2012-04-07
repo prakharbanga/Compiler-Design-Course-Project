@@ -1,2 +1,5 @@
-main { a = b + c + d; 
+main { 
+int a, b, c, d;
+float e, f;
+a = b + c + d; 
 a += b;} 

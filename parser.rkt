@@ -29,10 +29,14 @@
   (define notop 'notop)
 
   ; Control flow
-  (define stmts 'stmts)
   (define func 'func)
   (define skip 'skip)
   (define cast 'cast)
+  (define decl 'decl)
+  (define decls 'decls)
+  (define stmt 'stmt)
+  (define stmts 'stmts)
+  (define scope 'scope)
 
   ; Arithmetic operators
   (define mulop 'mulop)
@@ -212,7 +216,7 @@
           ((OR_ASSIGN    ) or__op_assgn ))
 
         (expression 
-          ((assignment_expression                  ) $1                )
+          ((assignment_expression                  ) (tree stmt $1)                )
           ((expression COMMA assignment_expression ) (tree stmts $1 $3 )))
 
         (constant_expression 
@@ -221,12 +225,12 @@
         (declaration 
           ((declaration_specifiers SEMICOLON                      ) #f )
           ((type_declaration SEMICOLON                            ) #f )
-          ((declaration_specifiers init_declarator_list SEMICOLON ) #f ))
+          ((declaration_specifiers init_declarator_list SEMICOLON ) (tree decl $1 $2) ))
 
         (declaration_specifiers
           ((storage_class_specifier                                 ) #f )
           ((storage_class_specifier declaration_specifiers          ) #f )
-          ((type_specifier                                          ) #f )
+          ((type_specifier                                          ) $1 )
           ((type_specifier declaration_specifiers                   ) #f )
           ((type_qualifier                                          ) #f )
           ((type_qualifier declaration_specifiers                   ) #f )
@@ -238,11 +242,11 @@
           ((declspec type_qualifier declaration_specifiers          ) #f ))
 
         (init_declarator_list 
-          ((init_declarator                            ) #f )
-          ((init_declarator_list COMMA init_declarator ) #f ))
+          ((init_declarator                            ) (list $1) )
+          ((init_declarator_list COMMA init_declarator ) (append $1 (list $3))))
 
         (init_declarator 
-          ((declarator                    ) #f )
+          ((declarator                    ) $1 )
           ((declarator ASSIGN initializer ) #f ))
 
         (declspec_type 
@@ -418,18 +422,18 @@
           ((DEFAULT COLON statement                  ) #f ))
 
         (compound_statement 
-          ((LCB RCB                                 ) #f )
-          ((LCB statement_list RCB                  ) $2 )
-          ((LCB declaration_list RCB                ) #f )
-          ((LCB declaration_list statement_list RCB ) #f ))
+          ((LCB RCB                                 ) (tree scope null) )
+          ((LCB statement_list RCB                  ) (tree scope $2) )
+          ((LCB declaration_list RCB                ) (tree scope $2) )
+          ((LCB declaration_list statement_list RCB ) (tree scope $2 $3) ))
 
         (declaration_list 
-          ((declaration                  ) #f )
-          ((declaration_list declaration ) #f ))
+          ((declaration                  ) (tree decls $1) )
+          ((declaration_list declaration ) (tree decls $1 $2)))
 
         (statement_list 
-          ((statement                ) $1                )
-          ((statement_list statement ) (tree stmts $1 $2 )))
+          ((statement                ) (tree stmts $1)                )
+          ((statement_list statement ) (tree stmts $1 $2)))
 
         (expression_statement 
           ((SEMICOLON            ) skip )

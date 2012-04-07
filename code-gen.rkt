@@ -1,7 +1,6 @@
 (module code-gen racket
   (provide (all-defined-out))
-  (require "sem-ana.rkt"
-           "parser.rkt")
+  (require "parser.rkt")
 
   (define (code-gen ir)
     ir))
