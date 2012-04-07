@@ -55,6 +55,19 @@
   (define or_op 'or_op)
   (define terop 'terop)
 
+  ; Hash for arithmetic operator assignments to operators
+  (define op-hash 
+    (make-hash '((mul_op_assgn . mulop)
+                 (div_op_assgn . divop)
+                 (mod_op_assgn . modop)
+                 (add_op_assgn . addop)
+                 (sub_op_assgn . subop)
+                 (lef_op_assgn . lefop)
+                 (rig_op_assgn . rigop)
+                 (and_op_assgn . andop)
+                 (xor_op_assgn . xorop)
+                 (or__op_assgn . or_op))))
+
   ; Basic types
   (define voitype  'voitype)
   (define chatype  'chatype)
@@ -70,7 +83,7 @@
   (define-syntax-rule (assgn op op1 op2)
                       (if (equal? op no__op_assgn)
                         (list 'assgn (list op1 op2))
-                        (list 'assgn (list op1 (list op (list op1 op2))))))
+                        (list 'assgn (list op1 (list (hash-ref op-hash op) (list op1 op2))))))
 
   (define-syntax tree 
     (syntax-rules ()

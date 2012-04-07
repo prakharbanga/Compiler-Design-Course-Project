@@ -1,6 +1,7 @@
 (module sem-ana racket
   (provide (all-defined-out))
-  (require "parser.rkt")
+  (require "symbol_table.rkt"
+           "parser.rkt")
 
   ; The symbol table
   (define cur_sym_tab (new_symbol_table #f))
