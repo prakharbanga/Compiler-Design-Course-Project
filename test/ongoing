@@ -1,5 +1,5 @@
-main { 
-int a, b, c, d;
+main (int k, char c) { 
 float e, f;
+{int a, b, c, d;}
 a = b + c + d; 
 a += b;} 

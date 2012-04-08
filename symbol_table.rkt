@@ -1,7 +1,7 @@
 (module symbol_table racket
-  (provide new_symbol_table insert! lookup)
+  (provide new_symbol_table insert! lookup parent)
 
-  (struct symbol_table (parent table))
+  (struct symbol_table (parent table) #:transparent)
 
   (define (new_symbol_table parent)
     (symbol_table parent (make-hash)))

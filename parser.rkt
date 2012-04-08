@@ -5,6 +5,9 @@
            "symbol_table.rkt"
            "lexer.rkt")
 
+  ; The global symbol table
+  (define cur_sym_tab (new_symbol_table #f))
+
   ; This is ugly, but couldn't find any other way to get multiple global constants
 
   ; Assignment operators
@@ -94,6 +97,19 @@
       [(tree a) (list a)]
       [(tree a b ...) (list a (list b ...))]))
 
+  (define (sym_tab_ins decl_spec decl_list) (sym_tab_insh decl_spec decl_list '()))
+
+  (define sym_tab_insh (lambda (decl_spec decl_list ret_list)
+                (if (null? decl_list) 
+                  (tree decl decl_spec ret_list)
+                  (begin 
+                    (insert! cur_sym_tab (car decl_list) decl_spec)
+                    (display cur_sym_tab)
+                    (newline)
+                    (sym_tab_insh
+                      decl_spec
+                      (cdr decl_list)
+                      (append ret_list (list (car decl_list)))))))) 
 
   (define objc-parser
     (parser
@@ -143,8 +159,8 @@
           ((EXCLAMATION ) notop ))
 
         (cast_expression 
-          ((unary_expression                ) $1 )
-          ((LB type_name RB cast_expression ) (tree cast $2 $4)))
+          ((unary_expression                ) $1               )
+          ((LB type_name RB cast_expression ) (tree cast $2 $4 )))
 
         (multiplicative_expression
           ((cast_expression                                    ) $1                )
@@ -216,16 +232,16 @@
           ((OR_ASSIGN    ) or__op_assgn ))
 
         (expression 
-          ((assignment_expression                  ) (tree stmt $1)                )
+          ((assignment_expression                  ) (tree stmt $1     ))
           ((expression COMMA assignment_expression ) (tree stmts $1 $3 )))
 
         (constant_expression 
           ((conditional_expression ) #f ))
 
         (declaration 
-          ((declaration_specifiers SEMICOLON                      ) #f )
-          ((type_declaration SEMICOLON                            ) #f )
-          ((declaration_specifiers init_declarator_list SEMICOLON ) (tree decl $1 $2) ))
+          ((declaration_specifiers SEMICOLON                      ) #f               )
+          ((type_declaration SEMICOLON                            ) #f               )
+          ((declaration_specifiers init_declarator_list SEMICOLON ) (sym_tab_ins $1 $2)))
 
         (declaration_specifiers
           ((storage_class_specifier                                 ) #f )
@@ -242,8 +258,8 @@
           ((declspec type_qualifier declaration_specifiers          ) #f ))
 
         (init_declarator_list 
-          ((init_declarator                            ) (list $1) )
-          ((init_declarator_list COMMA init_declarator ) (append $1 (list $3))))
+          ((init_declarator                            ) (list $1            ))
+          ((init_declarator_list COMMA init_declarator ) (append $1 (list $3 ))))
 
         (init_declarator 
           ((declarator                    ) $1 )
@@ -288,8 +304,8 @@
           ((DOUBLE                    ) doutype )
           ((SIGNED                    ) sigtype )
           ((UNSIGNED                  ) unstype )
-          ((struct_or_union_specifier ) #f )
-          ((enum_specifier            ) #f ))
+          ((struct_or_union_specifier ) #f      )
+          ((enum_specifier            ) #f      ))
 
         (struct_or_union_specifier 
           ((struct_or_union identifier LCB struct_declaration_list RCB ) #f )
@@ -422,18 +438,28 @@
           ((DEFAULT COLON statement                  ) #f ))
 
         (compound_statement 
-          ((LCB RCB                                 ) (tree scope null) )
-          ((LCB statement_list RCB                  ) (tree scope $2) )
-          ((LCB declaration_list RCB                ) (tree scope $2) )
-          ((LCB declaration_list statement_list RCB ) (tree scope $2 $3) ))
+          ((LCB RCB                                 ) (tree scope null  ))
+          ((LCB statement_list RCB                  ) (tree scope $2    ))
+          ((LCB declaration_list RCB                ) (tree scope $2    ))
+          ((LCB declaration_list statement_list RCB ) (tree scope $2 $3 )))
+
+        (scope_start
+          (() (begin 
+                   (set! cur_sym_tab (new_symbol_table cur_sym_tab))
+                   #f)))
+
+        (scope_end
+          (() (begin 
+                   (set! cur_sym_tab (parent cur_sym_tab))
+                   #f)))
 
         (declaration_list 
-          ((declaration                  ) (tree decls $1) )
-          ((declaration_list declaration ) (tree decls $1 $2)))
+          ((declaration                  ) (tree decls $1    ))
+          ((declaration_list declaration ) (tree decls $1 $2 )))
 
         (statement_list 
-          ((statement                ) (tree stmts $1)                )
-          ((statement_list statement ) (tree stmts $1 $2)))
+          ((statement                ) (tree stmts $1    ))
+          ((statement_list statement ) (tree stmts $1 $2 )))
 
         (expression_statement 
           ((SEMICOLON            ) skip )
