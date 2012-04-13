@@ -8,6 +8,30 @@
   ; The global symbol table
   (define cur_sym_tab (new_symbol_table #f))
 
+  (define label_count 0)
+  (define var___count 0)
+
+  (define-syntax-rule (inc1! x) (set! x (+ 1 x)))
+
+  (define (new_label) (begin (inc1! label_count) (string-append "label_" (number->string label_count))))
+  (define (new___var) (begin (inc1! var___count) (string-append "var___" (number->string var___count))))
+
+  (define-syntax-rule (make-var-entry mem)
+                      (make-hash (list (cons __mem mem))))
+
+  (define-syntax-rule (get-mem-loc entry)
+                      (hash-ref entry __mem))
+
+  (define-syntax-rule (make-func-entry label parlist)
+                      (make-hash (list (cons __label label) (cons __parlist parlist))))
+
+  (define-syntax set-type!
+    (syntax-rules ()
+      [(set-type! entry type) (begin (hash-set! entry __type type) entry)]))
+
+  (define-syntax-rule (get_from_sym_tab sym field)
+                      (hash-ref (lookup cur_sym_tab sym) field))
+
   ; This is ugly, but couldn't find any other way to get multiple global constants
 
   ; Assignment operators
@@ -35,7 +59,6 @@
   (define func 'func)
   (define skip 'skip)
   (define cast 'cast)
-  (define stmt 'stmt)
 
   ; Arithmetic operators
   (define mulop 'mulop)
@@ -82,33 +105,31 @@
   (define sigtype  'sigtype)
   (define unstype  'unstype)
 
+  ; Symbol table entry keys
+  (define __id "__id")
+  (define __mem "__mem")
+  (define __type "__type")
+  (define __parlist "__parlist")
+  (define __label "__label")
+
   ; Some macros
+
   (define-syntax-rule (assgn op op1 op2)
                       (if (equal? op no__op_assgn)
                         (tree 'assgn op1 op2)
                         (tree 'assgn op1 (tree (hash-ref op-hash op) op1 op2))))
-
-  (define-syntax-rule (sym_tab_entry)
-                      ())
 
   (define-syntax tree 
     (syntax-rules ()
       [(tree a) (list a)]
       [(tree a b ...) (list a (list b ...))]))
 
-  (define (sym_tab_ins decl_spec decl_list) (sym_tab_insh decl_spec decl_list '()))
-
-  (define sym_tab_insh (lambda (decl_spec decl_list ret_list)
-                (if (null? decl_list) 
-                  skip
-                  (begin 
-                    (insert! cur_sym_tab (car decl_list) decl_spec)
-                    (display cur_sym_tab)
-                    (newline)
-                    (sym_tab_insh
-                      decl_spec
-                      (cdr decl_list)
-                      (append ret_list (list (car decl_list)))))))) 
+  (define sym_tab_ins (lambda (decl_spec decl_list)
+                         (if (null? decl_list) 
+                           skip
+                           (begin 
+                             (insert! cur_sym_tab (caar decl_list) (set-type! (cadar decl_list) decl_spec))
+                             (sym_tab_ins decl_spec (cdr decl_list))))))
 
   (define objc-parser
     (parser
@@ -122,7 +143,7 @@
           ((translation_unit) $1))
 
         (primary_expression 
-          ((identifier       ) $1 )
+          ((identifier       ) (get_from_sym_tab $1 __mem))
           ((CONSTANT         ) #f )
           ((STRING_LITERAL   ) #f )
           ((LB expression RB ) #f ))
@@ -262,7 +283,7 @@
 
         (init_declarator 
           ((declarator                    ) (list $1 skip         ))
-          ((declarator ASSIGN initializer ) (list $1 (assgn no__op_assgn $1 $3 ))))
+          ((declarator ASSIGN initializer ) (list $1 (assgn no__op_assgn (get-mem-loc (cadr $1)) $3 ))))
 
         (declspec_type 
           ((DLLIMPORT ) #f )
@@ -359,7 +380,7 @@
           ((direct_declarator         ) $1 ))
 
         (direct_declarator
-          ((identifier                                    ) $1 )
+          ((identifier                                    ) (list $1 (make-var-entry (new___var))))
           ((LB declarator RB                              ) #f )
           ((direct_declarator LSB constant_expression RSB ) #f )
           ((direct_declarator LSB RSB                     ) #f )
@@ -444,13 +465,13 @@
 
         (scope_start
           (() (begin 
-                   (set! cur_sym_tab (new_symbol_table cur_sym_tab))
-                   #f)))
+                (set! cur_sym_tab (new_symbol_table cur_sym_tab))
+                #f)))
 
         (scope_end
           (() (begin 
-                   (set! cur_sym_tab (parent cur_sym_tab))
-                   #f)))
+                (set! cur_sym_tab (parent cur_sym_tab))
+                #f)))
 
         (declaration_list 
           ((declaration                  ) $1 )

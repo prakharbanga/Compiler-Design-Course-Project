@@ -1,6 +1,4 @@
 main  { 
-{
-int a=5, b, c, d;
+int a, b, d;
+a = 7 + b/d;
 }
-a = b + c + d; 
-a += b;} 
