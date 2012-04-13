@@ -32,8 +32,6 @@
   (define-syntax-rule (get_from_sym_tab sym field)
                       (hash-ref (lookup cur_sym_tab sym) field))
 
-  ; This is ugly, but couldn't find any other way to get multiple global constants
-
   ; Assignment operators
   (define no__op_assgn 'no__op_assgn)
   (define mul_op_assgn 'mul_op_assgn)
@@ -278,7 +276,7 @@
           ((declspec type_qualifier declaration_specifiers          ) #f ))
 
         (init_declarator_list 
-          ((init_declarator                            ) (list (list (car $1 ))  (cdr $1 )))
+          ((init_declarator                            ) (list (list (car $1   ))   (cdr $1 )))
           ((init_declarator_list COMMA init_declarator ) (list (append (car $1 ) (list (car $3 ))) (append (cadr $1 ) (cdr $3 )))))
 
         (init_declarator 
@@ -380,13 +378,13 @@
           ((direct_declarator         ) $1 ))
 
         (direct_declarator
-          ((identifier                                    ) (list $1 (make-var-entry (new___var))))
+          ((identifier                                    ) (list $1 (make-var-entry (new___var ))))
           ((LB declarator RB                              ) #f )
           ((direct_declarator LSB constant_expression RSB ) #f )
           ((direct_declarator LSB RSB                     ) #f )
           ((direct_declarator LB parameter_type_list RB   ) #f )
           ((direct_declarator LB identifier_list RB       ) #f )
-          ((direct_declarator LB RB                       ) #f ))
+          ((direct_declarator LB RB                       ) (list (car $1 ) (make-func-entry (new_label ) null ))))
 
         (pointer 
           ((ASTERISK                             ) #f )
@@ -458,10 +456,10 @@
           ((DEFAULT COLON statement                  ) #f ))
 
         (compound_statement 
-          ((LCB RCB                                 ) (list skip))
-          ((LCB statement_list RCB                  ) $2    )
-          ((LCB declaration_list RCB                ) $2    )
-          ((LCB declaration_list statement_list RCB ) (append $2 $3)))
+          ((LCB RCB                                 ) (list skip    ))
+          ((LCB statement_list RCB                  ) $2            )
+          ((LCB declaration_list RCB                ) $2            )
+          ((LCB declaration_list statement_list RCB ) (append $2 $3 )))
 
         (scope_start
           (() (begin 
@@ -482,7 +480,7 @@
           ((statement_list statement ) (append $1 $2 )))
 
         (expression_statement 
-          ((SEMICOLON            ) (list skip) )
+          ((SEMICOLON            ) (list skip))
           ((expression SEMICOLON ) $1   ))
 
         (selection_statement 
@@ -504,8 +502,8 @@
           ((RETURN expression SEMICOLON ) #f ))
 
         (translation_unit 
-          ((external_declaration                  ) $1 )
-          ((translation_unit external_declaration ) #f ))
+          ((external_declaration                  ) (list $1))
+          ((translation_unit external_declaration ) (append $1 (list $2))))
 
         (external_declaration
           ((function_definition     ) $1 )

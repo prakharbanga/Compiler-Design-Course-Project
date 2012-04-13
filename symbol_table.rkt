@@ -1,5 +1,5 @@
 (module symbol_table racket
-  (provide new_symbol_table insert! lookup parent)
+  (provide (all-defined-out))
 
   (struct symbol_table (parent table) #:transparent)
 

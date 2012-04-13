@@ -1,4 +1,5 @@
-main  { 
-int a, b, d;
-a = 7 + b/d;
+main()  { 
+int a, b, c;
+
+a = b + c;
 }
