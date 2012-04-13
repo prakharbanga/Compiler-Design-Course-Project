@@ -9,14 +9,16 @@
   (define (insert! sym_tab lexeme attrs)
     (let ([tab (symbol_table-table sym_tab)])
       (if (hash-has-key? tab lexeme) 
-        #f
+        (error (string-append "Symbol " lexeme " already exists."))
         (begin (hash-set! tab lexeme attrs) #t))))
 
   (define (lookup sym_tab lexeme)
     (hash-ref (symbol_table-table sym_tab) lexeme
               [(lambda ()
                  (let ([par (symbol_table-parent sym_tab)])
-                   (if par (lookup par lexeme) #f)))]))
+                   (if par (lookup par lexeme) 
+                     (error (string-append "Symbol " lexeme " doesn't exist."))
+                     )))]))
 
   (define (parent sym_tab)
     (symbol_table-parent sym_tab)))

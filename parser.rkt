@@ -35,11 +35,7 @@
   (define func 'func)
   (define skip 'skip)
   (define cast 'cast)
-  (define decl 'decl)
-  (define decls 'decls)
   (define stmt 'stmt)
-  (define stmts 'stmts)
-  (define scope 'scope)
 
   ; Arithmetic operators
   (define mulop 'mulop)
@@ -89,8 +85,11 @@
   ; Some macros
   (define-syntax-rule (assgn op op1 op2)
                       (if (equal? op no__op_assgn)
-                        (list 'assgn (list op1 op2))
-                        (list 'assgn (list op1 (list (hash-ref op-hash op) (list op1 op2))))))
+                        (tree 'assgn op1 op2)
+                        (tree 'assgn op1 (tree (hash-ref op-hash op) op1 op2))))
+
+  (define-syntax-rule (sym_tab_entry)
+                      ())
 
   (define-syntax tree 
     (syntax-rules ()
@@ -101,7 +100,7 @@
 
   (define sym_tab_insh (lambda (decl_spec decl_list ret_list)
                 (if (null? decl_list) 
-                  (tree decl decl_spec ret_list)
+                  skip
                   (begin 
                     (insert! cur_sym_tab (car decl_list) decl_spec)
                     (display cur_sym_tab)
@@ -232,8 +231,8 @@
           ((OR_ASSIGN    ) or__op_assgn ))
 
         (expression 
-          ((assignment_expression                  ) (tree stmt $1     ))
-          ((expression COMMA assignment_expression ) (tree stmts $1 $3 )))
+          ((assignment_expression                  ) (list $1))
+          ((expression COMMA assignment_expression ) (append $1 $3 )))
 
         (constant_expression 
           ((conditional_expression ) #f ))
@@ -241,7 +240,7 @@
         (declaration 
           ((declaration_specifiers SEMICOLON                      ) #f               )
           ((type_declaration SEMICOLON                            ) #f               )
-          ((declaration_specifiers init_declarator_list SEMICOLON ) (sym_tab_ins $1 $2)))
+          ((declaration_specifiers init_declarator_list SEMICOLON ) (begin (sym_tab_ins $1 (car $2)) (cadr $2))))
 
         (declaration_specifiers
           ((storage_class_specifier                                 ) #f )
@@ -258,12 +257,12 @@
           ((declspec type_qualifier declaration_specifiers          ) #f ))
 
         (init_declarator_list 
-          ((init_declarator                            ) (list $1            ))
-          ((init_declarator_list COMMA init_declarator ) (append $1 (list $3 ))))
+          ((init_declarator                            ) (list (list (car $1 ))  (cdr $1 )))
+          ((init_declarator_list COMMA init_declarator ) (list (append (car $1 ) (list (car $3 ))) (append (cadr $1 ) (cdr $3 )))))
 
         (init_declarator 
-          ((declarator                    ) $1 )
-          ((declarator ASSIGN initializer ) #f ))
+          ((declarator                    ) (list $1 skip         ))
+          ((declarator ASSIGN initializer ) (list $1 (assgn no__op_assgn $1 $3 ))))
 
         (declspec_type 
           ((DLLIMPORT ) #f )
@@ -416,7 +415,7 @@
           ((direct_abstract_declarator LB parameter_type_list RB   ) #f ))
 
         (initializer 
-          ((assignment_expression          ) #f )
+          ((assignment_expression          ) $1 )
           ((LCB initializer_list RCB       ) #f )
           ((LCB initializer_list COMMA RCB ) #f ))
 
@@ -426,7 +425,7 @@
 
         (statement 
           ((labeled_statement    ) #f )
-          ((compound_statement   ) #f )
+          ((compound_statement   ) $1 )
           ((expression_statement ) $1 )
           ((selection_statement  ) #f )
           ((iteration_statement  ) #f )
@@ -438,10 +437,10 @@
           ((DEFAULT COLON statement                  ) #f ))
 
         (compound_statement 
-          ((LCB RCB                                 ) (tree scope null  ))
-          ((LCB statement_list RCB                  ) (tree scope $2    ))
-          ((LCB declaration_list RCB                ) (tree scope $2    ))
-          ((LCB declaration_list statement_list RCB ) (tree scope $2 $3 )))
+          ((LCB RCB                                 ) (list skip))
+          ((LCB statement_list RCB                  ) $2    )
+          ((LCB declaration_list RCB                ) $2    )
+          ((LCB declaration_list statement_list RCB ) (append $2 $3)))
 
         (scope_start
           (() (begin 
@@ -454,15 +453,15 @@
                    #f)))
 
         (declaration_list 
-          ((declaration                  ) (tree decls $1    ))
-          ((declaration_list declaration ) (tree decls $1 $2 )))
+          ((declaration                  ) $1 )
+          ((declaration_list declaration ) (append $1 $2 )))
 
         (statement_list 
-          ((statement                ) (tree stmts $1    ))
-          ((statement_list statement ) (tree stmts $1 $2 )))
+          ((statement                ) $1 )
+          ((statement_list statement ) (append $1 $2 )))
 
         (expression_statement 
-          ((SEMICOLON            ) skip )
+          ((SEMICOLON            ) (list skip) )
           ((expression SEMICOLON ) $1   ))
 
         (selection_statement 
@@ -501,7 +500,7 @@
           ((declaration_specifiers declarator declaration_list compound_statement ) #f                )
           ((declaration_specifiers declarator compound_statement                  ) #f                )
           ((declarator declaration_list compound_statement                        ) #f                )
-          ((declarator compound_statement                                         ) (tree 'func $1 $2 )))
+          ((declarator compound_statement                                         ) (tree func $1 $2 )))
 
         (class_interface
           ((INTERFACE class_name instance_variables interface_declaration_list END                                               ) #f )
