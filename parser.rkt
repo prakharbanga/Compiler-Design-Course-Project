@@ -2,40 +2,7 @@
   (provide (all-defined-out))
 
   (require parser-tools/yacc
-           "symbol_table.rkt"
            "lexer.rkt")
-
-  ; The global symbol table
-  (define cur_sym_tab (new_symbol_table #f))
-
-  (define label_count 0)
-  (define var___count 0)
-
-  (define-syntax-rule (ret (proc x ...)) (begin (proc x ...) (car (list x ...))))
-
-  (define-syntax-rule (setr! x y) (ret (set! x y)))
-
-  (define-syntax-rule (inc1! x) (set! x (+ 1 x)))
-  (define (new_label) (begin (inc1! label_count) (string-append "label_" (number->string label_count))))
-  (define (new___var) (begin (inc1! var___count) (string-append "var___" (number->string var___count))))
-
-  (define-syntax-rule (make-var-entry)
-                      (make-hash (list (cons __mem (new___var)))))
-
-  (define-syntax-rule (make-func-entry parlist)
-                      (make-hash (list (cons __label (new_label)) (cons __parlist parlist))))
-
-  (define-syntax-rule (get_mem_loc sym)
-                      (hash-ref (lookup cur_sym_tab sym) __mem))
-
-  (define-syntax-rule (get_type sym)
-                      (hash-ref (lookup cur_sym_tab sym) __type))
-
-  (define-syntax-rule (get_label sym)
-                      (hash-ref (lookup cur_sym_tab sym) __label))
-
-  (define scope-extra #f)
-  (define current-type #f)
 
   ; Assignment operators
   (define no__op_assgn 'no__op_assgn)
@@ -60,6 +27,9 @@
 
   ; Control flow
   (define func 'func)
+  (define defi 'defi)
+  (define var_ 'var_)
+  (define decl 'decl)
   (define skip 'skip)
   (define cast 'cast)
 
@@ -108,12 +78,6 @@
   (define sigtype  'sigtype)
   (define unstype  'unstype)
 
-  ; Symbol table entry keys
-  (define __mem "__mem")
-  (define __type "__type")
-  (define __parlist "__parlist")
-  (define __label "__label")
-
   ; Some macros
 
   (define-syntax-rule (assgn op op1 op2)
@@ -126,10 +90,6 @@
       [(tree a) (list a)]
       [(tree a b ...) (list a (list b ...))]))
 
-  (define (sym_tab_ins! decl_name decl_fields) (insert! cur_sym_tab decl_name decl_fields))
-
-  (define-syntax-rule (listif x) (if x (list x) null))
-
   (define objc-parser
     (parser
       (start exp)
@@ -141,7 +101,7 @@
           ((translation_unit) $1))
 
         (primary_expression 
-          ((identifier       ) (get_mem_loc $1))
+          ((identifier       ) $1 )
           ((CONSTANT         ) #f )
           ((STRING_LITERAL   ) #f )
           ((LB expression RB ) #f ))
@@ -259,13 +219,13 @@
         (declaration 
           ((declaration_specifiers SEMICOLON                      ) #f )
           ((type_declaration SEMICOLON                            ) #f )
-          ((declaration_specifiers init_declarator_list SEMICOLON ) $2 ))
+          ((declaration_specifiers init_declarator_list SEMICOLON ) (tree decl $1 $2)))
 
 
         (declaration_specifiers
           ((storage_class_specifier                                 ) #f )
           ((storage_class_specifier declaration_specifiers          ) #f )
-          ((type_specifier                                          ) (setr! current-type $1))
+          ((type_specifier                                          ) $1 )
           ((type_specifier declaration_specifiers                   ) #f )
           ((type_qualifier                                          ) #f )
           ((type_qualifier declaration_specifiers                   ) #f )
@@ -278,11 +238,11 @@
 
         (init_declarator_list 
           ((init_declarator                            ) $1 )
-          ((init_declarator_list COMMA init_declarator ) (append $1 $3)))
+          ((init_declarator_list COMMA init_declarator ) (list (append (car $1) (car $3)) (append (cadr $1) (cadr $3)))))
 
         (init_declarator 
-          ((declarator                    ) (list skip))
-          ((declarator ASSIGN initializer ) (assgn no__op_assgn $1 $3 )))
+          ((declarator                    ) (list (list $1) (list skip)))
+          ((declarator ASSIGN initializer ) (list (list $1) (assgn no__op_assgn $1 $3))))
 
         (declspec_type 
           ((DLLIMPORT ) #f )
@@ -376,16 +336,16 @@
 
         (declarator 
           ((pointer direct_declarator ) #f )
-          ((direct_declarator         ) (begin (sym_tab_ins! (car $1) (hash-set! (cadr $1) __type current-type)) (car $1))))
+          ((direct_declarator         ) $1 ))
 
         (direct_declarator
-          ((identifier                                    ) (list $1 (make-var-entry )))
-          ((LB declarator RB                              ) #f )
-          ((direct_declarator LSB constant_expression RSB ) #f )
-          ((direct_declarator LSB RSB                     ) #f )
-          ((direct_declarator LB parameter_type_list RB   ) (list (car $1 ) (make-func-entry $3 )))
-          ((direct_declarator LB identifier_list RB       ) (list (car $1 ) (make-func-entry $3 )))
-          ((direct_declarator LB RB                       ) (list (car $1 ) (make-func-entry null ))))
+          ((identifier                                    ) (tree var_ $1    ))
+          ((LB declarator RB                              ) #f               )
+          ((direct_declarator LSB constant_expression RSB ) #f               )
+          ((direct_declarator LSB RSB                     ) #f               )
+          ((direct_declarator LB parameter_type_list RB   ) (tree func $1 $3 ))
+          ((direct_declarator LB identifier_list RB       ) #f               )
+          ((direct_declarator LB RB                       ) #f               ))
 
         (pointer 
           ((ASTERISK                             ) #f )
@@ -398,15 +358,15 @@
           ((type_qualifier_list type_qualifier ) #f ))
 
         (parameter_type_list 
-          ((parameter_list                ) (setr! scope-extra $1 ))
-          ((parameter_list COMMA ELLIPSIS ) #f                    ))
+          ((parameter_list                ) $1 )
+          ((parameter_list COMMA ELLIPSIS ) #f ))
 
         (parameter_list 
           ((parameter_declaration                      ) (list $1))
           ((parameter_list COMMA parameter_declaration ) (append $1 (list $3))))
 
         (parameter_declaration 
-          ((declaration_specifiers declarator          ) (list (car $2) (ret (hash-set! (cadr $2) __type $1))))
+          ((declaration_specifiers declarator          ) (list $1 $2))
           ((declaration_specifiers abstract_declarator ) #f )
           ((declaration_specifiers                     ) #f ))
 
@@ -445,7 +405,7 @@
 
         (statement 
           ((labeled_statement    ) #f )
-          ((compound_statement   ) $1 )
+          ((compound_statement   ) #f )
           ((expression_statement ) $1 )
           ((selection_statement  ) #f )
           ((iteration_statement  ) #f )
@@ -457,22 +417,14 @@
           ((DEFAULT COLON statement                  ) #f ))
 
         (compound_statement 
-          ((scope_start scope_end                                 ) #f)
-          ((scope_start statement_list scope_end                  ) #f)
-          ((scope_start declaration_list scope_end                ) #f)
-          ((scope_start declaration_list statement_list scope_end ) #f))
-
-        (scope_start
-          ((LCB) (begin 
-                   (set! cur_sym_tab (new_symbol_table cur_sym_tab)))))
-
-        (scope_end
-          ((RCB) (begin 
-                   (set! cur_sym_tab (parent cur_sym_tab)))))
+          ((LCB RCB                                 ) #f)
+          ((LCB statement_list RCB                  ) #f)
+          ((LCB declaration_list RCB                ) #f)
+          ((LCB declaration_list statement_list RCB ) #f))
 
         (declaration_list 
-          ((declaration                  ) (setr! scope-extra $1))
-          ((declaration_list declaration ) (setr! scope-extra (list (append (car $1) (car $2)) (append (cadr $1) (cadr $2))))))
+          ((declaration                  ) (list $1))
+          ((declaration_list declaration ) (append $1 $2)))
 
         (statement_list 
           ((statement                ) $1            )
@@ -501,24 +453,24 @@
           ((RETURN expression SEMICOLON ) #f ))
 
         (translation_unit 
-          ((external_declaration                  ) (listif $1))
-          ((translation_unit external_declaration ) (append $1 (listif $2))))
+          ((external_declaration                  ) $1 )
+          ((translation_unit external_declaration ) (append $1 $2 )))
 
         (external_declaration
-          ((function_definition     ) $1 )
-          ((declaration             ) $1 )
-          ((class_interface         ) #f )
-          ((class_implementation    ) #f )
-          ((category_interface      ) #f )
-          ((category_implementation ) #f )
-          ((protocol_declaration    ) #f )
-          ((class_declaration_list  ) #f ))
+          ((function_definition     ) (list $1 ))
+          ((declaration             ) (list $1 ))
+          ((class_interface         ) #f       )
+          ((class_implementation    ) #f       )
+          ((category_interface      ) #f       )
+          ((category_implementation ) #f       )
+          ((protocol_declaration    ) #f       )
+          ((class_declaration_list  ) #f       ))
 
         (function_definition
-          ((declaration_specifiers declarator declaration_list compound_statement ) #f )
-          ((declaration_specifiers declarator compound_statement                  ) $3 )
-          ((declarator declaration_list compound_statement                        ) #f )
-          ((declarator compound_statement                                         ) #f ))
+          ((declaration_specifiers declarator declaration_list compound_statement ) #f                  )
+          ((declaration_specifiers declarator compound_statement                  ) (tree defi $1 $2 $3 ))
+          ((declarator declaration_list compound_statement                        ) #f                  )
+          ((declarator compound_statement                                         ) #f                  ))
 
         (class_interface
           ((INTERFACE class_name instance_variables interface_declaration_list END                                               ) #f )
