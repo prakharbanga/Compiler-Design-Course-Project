@@ -11,26 +11,28 @@
   (define label_count 0)
   (define var___count 0)
 
-  (define-syntax-rule (inc1! x) (set! x (+ 1 x)))
+  (define-syntax-rule (ret (proc x ...)) (begin (proc x ...) (car (list x ...))))
 
+  (define-syntax-rule (inc1! x) (set! x (+ 1 x)))
   (define (new_label) (begin (inc1! label_count) (string-append "label_" (number->string label_count))))
   (define (new___var) (begin (inc1! var___count) (string-append "var___" (number->string var___count))))
 
-  (define-syntax-rule (make-var-entry mem)
-                      (make-hash (list (cons __mem mem))))
+  (define-syntax-rule (make-var-entry)
+                      (make-hash (list (cons __mem (new___var)))))
 
-  (define-syntax-rule (get-mem-loc entry)
-                      (hash-ref entry __mem))
+  (define-syntax-rule (make-func-entry parlist)
+                      (make-hash (list (cons __label (new_label)) (cons __parlist parlist))))
 
-  (define-syntax-rule (make-func-entry label parlist)
-                      (make-hash (list (cons __label label) (cons __parlist parlist))))
+  (define-syntax-rule (get_mem_loc sym)
+                      (hash-ref (lookup cur_sym_tab sym) __mem))
 
-  (define-syntax set-type!
-    (syntax-rules ()
-      [(set-type! entry type) (begin (hash-set! entry __type type) entry)]))
+  (define-syntax-rule (get_type sym)
+                      (hash-ref (lookup cur_sym_tab sym) __type))
 
-  (define-syntax-rule (get_from_sym_tab sym field)
-                      (hash-ref (lookup cur_sym_tab sym) field))
+  (define-syntax-rule (get_label sym)
+                      (hash-ref (lookup cur_sym_tab sym) __label))
+
+  (define scope-extra null)
 
   ; Assignment operators
   (define no__op_assgn 'no__op_assgn)
@@ -104,7 +106,6 @@
   (define unstype  'unstype)
 
   ; Symbol table entry keys
-  (define __id "__id")
   (define __mem "__mem")
   (define __type "__type")
   (define __parlist "__parlist")
@@ -122,12 +123,13 @@
       [(tree a) (list a)]
       [(tree a b ...) (list a (list b ...))]))
 
-  (define sym_tab_ins (lambda (decl_spec decl_list)
-                         (if (null? decl_list) 
-                           skip
-                           (begin 
-                             (insert! cur_sym_tab (caar decl_list) (set-type! (cadar decl_list) decl_spec))
-                             (sym_tab_ins decl_spec (cdr decl_list))))))
+  (define sym_tab_ins! (lambda (decl) (insert! cur_sym_tab (car decl) (cadr decl))))
+
+  (define (sym_tab_ins_list! decl_list) (begin (display decl_list) (newline) (for-each sym_tab_ins! decl_list)))
+
+  (define (scope_insert! decl_stmt_list) (begin (display decl_stmt_list) (newline) (sym_tab_ins_list! (car decl_stmt_list)) (cadr decl_stmt_list)))
+
+  (define-syntax-rule (listif x) (if x (list x) null))
 
   (define objc-parser
     (parser
@@ -141,7 +143,7 @@
           ((translation_unit) $1))
 
         (primary_expression 
-          ((identifier       ) (get_from_sym_tab $1 __mem))
+          ((identifier       ) (get_mem_loc $1))
           ((CONSTANT         ) #f )
           ((STRING_LITERAL   ) #f )
           ((LB expression RB ) #f ))
@@ -259,7 +261,8 @@
         (declaration 
           ((declaration_specifiers SEMICOLON                      ) #f               )
           ((type_declaration SEMICOLON                            ) #f               )
-          ((declaration_specifiers init_declarator_list SEMICOLON ) (begin (sym_tab_ins $1 (car $2)) (cadr $2))))
+          ((declaration_specifiers init_declarator_list SEMICOLON ) 
+           (list (map (lambda (decl) (list (car decl) (ret (hash-set! (cadr decl) __type $1)))) (car $2)) (cadr $2))))
 
         (declaration_specifiers
           ((storage_class_specifier                                 ) #f )
@@ -281,7 +284,7 @@
 
         (init_declarator 
           ((declarator                    ) (list $1 skip         ))
-          ((declarator ASSIGN initializer ) (list $1 (assgn no__op_assgn (get-mem-loc (cadr $1)) $3 ))))
+          ((declarator ASSIGN initializer ) (list $1 (assgn no__op_assgn (hash-ref (cadr $1) __mem) $3 ))))
 
         (declspec_type 
           ((DLLIMPORT ) #f )
@@ -378,13 +381,13 @@
           ((direct_declarator         ) $1 ))
 
         (direct_declarator
-          ((identifier                                    ) (list $1 (make-var-entry (new___var ))))
+          ((identifier                                    ) (list $1 (make-var-entry )))
           ((LB declarator RB                              ) #f )
           ((direct_declarator LSB constant_expression RSB ) #f )
           ((direct_declarator LSB RSB                     ) #f )
-          ((direct_declarator LB parameter_type_list RB   ) #f )
-          ((direct_declarator LB identifier_list RB       ) #f )
-          ((direct_declarator LB RB                       ) (list (car $1 ) (make-func-entry (new_label ) null ))))
+          ((direct_declarator LB parameter_type_list RB   ) (list (car $1 ) (make-func-entry $3 )))
+          ((direct_declarator LB identifier_list RB       ) (list (car $1 ) (make-func-entry $3 )))
+          ((direct_declarator LB RB                       ) (list (car $1 ) (make-func-entry null ))))
 
         (pointer 
           ((ASTERISK                             ) #f )
@@ -397,21 +400,21 @@
           ((type_qualifier_list type_qualifier ) #f ))
 
         (parameter_type_list 
-          ((parameter_list                ) #f )
+          ((parameter_list                ) $1 )
           ((parameter_list COMMA ELLIPSIS ) #f ))
 
         (parameter_list 
-          ((parameter_declaration                      ) #f )
-          ((parameter_list COMMA parameter_declaration ) #f ))
+          ((parameter_declaration                      ) (list $1))
+          ((parameter_list COMMA parameter_declaration ) (append $1 (list $3))))
 
         (parameter_declaration 
-          ((declaration_specifiers declarator          ) #f )
+          ((declaration_specifiers declarator          ) (list (car $2) (ret (hash-set! (cadr $2) __type $1))))
           ((declaration_specifiers abstract_declarator ) #f )
           ((declaration_specifiers                     ) #f ))
 
         (identifier_list 
-          ((identifier                       ) #f )
-          ((identifier_list COMMA identifier ) #f ))
+          ((identifier                       ) (list $1) )
+          ((identifier_list COMMA identifier ) (append $1 (list $1)) ))
 
         (type_name 
           ((specifier_qualifier_list                     ) $1 )
@@ -458,8 +461,8 @@
         (compound_statement 
           ((LCB RCB                                 ) (list skip    ))
           ((LCB statement_list RCB                  ) $2            )
-          ((LCB declaration_list RCB                ) $2            )
-          ((LCB declaration_list statement_list RCB ) (append $2 $3 )))
+          ((LCB declaration_list RCB                ) (scope_insert! $2)            )
+          ((LCB declaration_list statement_list RCB ) (append (scope_insert! $2) $3 )))
 
         (scope_start
           (() (begin 
@@ -473,7 +476,7 @@
 
         (declaration_list 
           ((declaration                  ) $1 )
-          ((declaration_list declaration ) (append $1 $2 )))
+          ((declaration_list declaration ) (list (append (car $1) (car $2)) (append (cadr $1) (cadr $2)))))
 
         (statement_list 
           ((statement                ) $1 )
@@ -502,12 +505,12 @@
           ((RETURN expression SEMICOLON ) #f ))
 
         (translation_unit 
-          ((external_declaration                  ) (list $1))
-          ((translation_unit external_declaration ) (append $1 (list $2))))
+          ((external_declaration                  ) (listif $1))
+          ((translation_unit external_declaration ) (append $1 (listif $2))))
 
         (external_declaration
           ((function_definition     ) $1 )
-          ((declaration             ) #f )
+          ((declaration             ) (scope_insert! $1))
           ((class_interface         ) #f )
           ((class_implementation    ) #f )
           ((category_interface      ) #f )

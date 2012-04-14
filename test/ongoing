@@ -1,5 +1,3 @@
-main()  { 
-int a, b, c;
+char a(int b, char c);
 
-a = b + c;
-}
+a(char m) { float d, e;}

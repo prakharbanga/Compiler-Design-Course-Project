@@ -4,8 +4,14 @@
            "parser.rkt")
 
   (define (code-gen ir sym_tab)
-    (data-gen sym_tab)
-    (text-gen ir))
+    (display sym_tab)
+    (newline)
+    (display ir)
+    (newline))
+
+  ;(define (code-gen ir sym_tab)
+  ; (data-gen sym_tab)
+  ; (text-gen ir))
 
   (define (data-gen sym_tab)
     (begin (display "\t.data\n")
@@ -22,7 +28,7 @@
   (define (expr-code expr)
     (match expr
            ['skip "\n"]
-           [#f "\n"]
+           [#f (error "Unhandled rule")]
            [(list 'assgn (list var1 expr)) (string-append (expr-code expr) "\n" "sw $t0, " var1 "\n") ]
            [(list 'addop (list expr1 expr2)) (string-append (expr-code expr1) "\nmove $t1, $t0\n" (expr-code expr2) "move $t2, $t0\nadd $t0, $t1, $t2\n")]
            [(regexp "^var.*" var) (string-append "lw $t0, " (car var) "\n")]
