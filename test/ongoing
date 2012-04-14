@@ -1,3 +1,1 @@
-char a(int b, char c);
-
-a(char m) { float d, e;}
+char a(int m, float c);
