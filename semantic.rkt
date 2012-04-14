@@ -38,6 +38,7 @@
   (define __type "__type")
   (define __parlist "__parlist")
   (define __label "__label")
+  (define __symtab "__symtab")
 
   (define (sym_tab_ins! decl_name decl_fields) (insert! cur_sym_tab decl_name decl_fields))
 
@@ -45,11 +46,29 @@
     (for-each (lambda (decl) (sym_tab_ins! (cadr decl) 
                                            (match (car decl) 
                                                   ['var_ (make-hash [list (cons __mem (new___var)) (cons __type type)])]
-                                                  ['func (make-hash [list (cons __label (new_label)) (cons __type type)])]))) decls))
+                                                  ['func (make-hash [list (cons __label (new_label)) (cons __type type) (cons __parlist (caddr decl))])]))) decls))
 
   (define (semantic ast)
     (if (not (null? ast)) (append
                           (match (car ast)
-                                 [(list 'decl (list type (list decls stmts ))) (begin (insert-all! decls type) stmts)])
-                          (semantic (cdr ast)))
-      null)))
+                                 [(list 'decl (list type (list decls stmts ))) (begin (insert-all! decls type) stmts)]
+                                 [(list 'defi (list type declarator stmts)) 
+                                  (let [(inner_sym_tab (new_symbol_table cur_sym_tab))] 
+                                    (begin (let [(this_entry (lookup cur_sym_tab (cadr declarator)))]
+                                             (if (not (equal? type (hash-ref this_entry __type))) (error "Wrong return type") #f)
+                                             (display (hash-ref this_entry __parlist))
+                                             (newline)
+                                             (display (caddr declarator))
+                                             (newline)
+                                             (let [(par1 (hash-ref this_entry __parlist))
+                                                   (par2 (caddr declarator))]
+                                               (if (not (equal? (length par1) (length par2))) (error "Wrong number of arguments") #f)
+                                               (for-each (lambda (d1 d2) (if (not (equal? (car d1) (car d2))) (error "Wrong types") #f)) par1 par2))
+                                             (hash-set! this_entry __symtab inner_sym_tab))
+                                           (set! cur_sym_tab inner_sym_tab)
+                                           (for-each (lambda (parameter) (insert-all! (cdr parameter) (car parameter))) (caddr declarator))
+                                           (set! cur_sym_tab (parent cur_sym_tab))
+                                           stmts))])
+                                 (semantic (cdr ast)))
+                          null))
+  )

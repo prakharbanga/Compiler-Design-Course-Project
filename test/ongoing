@@ -1,1 +1,5 @@
-int fdks=df;
+int a(char d);
+
+int a(char b) {}
+
+

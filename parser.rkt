@@ -78,6 +78,9 @@
   (define sigtype  'sigtype)
   (define unstype  'unstype)
 
+  (define identf 'identf)
+  (define constn 'constn)
+
   ; Some macros
 
   (define-syntax-rule (assgn op op1 op2)
@@ -101,10 +104,10 @@
           ((translation_unit) $1))
 
         (primary_expression 
-          ((identifier       ) $1 )
-          ((CONSTANT         ) #f )
-          ((STRING_LITERAL   ) #f )
-          ((LB expression RB ) #f ))
+          ((identifier       ) (cons identf $1 ))
+          ((CONSTANT         ) (cons constn $1 ))
+          ((STRING_LITERAL   ) #f              )
+          ((LB expression RB ) #f              ))
 
         (postfix_expression
           ((primary_expression                                ) $1 )
@@ -343,7 +346,7 @@
           ((LB declarator RB                              ) #f               )
           ((direct_declarator LSB constant_expression RSB ) #f               )
           ((direct_declarator LSB RSB                     ) #f               )
-          ((direct_declarator LB parameter_type_list RB   ) (list func $1 $3 ))
+          ((direct_declarator LB parameter_type_list RB   ) (list func (cadr $1) $3 ))
           ((direct_declarator LB identifier_list RB       ) #f               )
           ((direct_declarator LB RB                       ) #f               ))
 
@@ -405,7 +408,7 @@
 
         (statement 
           ((labeled_statement    ) #f )
-          ((compound_statement   ) #f )
+          ((compound_statement   ) $1 )
           ((expression_statement ) $1 )
           ((selection_statement  ) #f )
           ((iteration_statement  ) #f )
@@ -417,10 +420,10 @@
           ((DEFAULT COLON statement                  ) #f ))
 
         (compound_statement 
-          ((LCB RCB                                 ) #f)
-          ((LCB statement_list RCB                  ) #f)
-          ((LCB declaration_list RCB                ) #f)
-          ((LCB declaration_list statement_list RCB ) #f))
+          ((LCB RCB                                 ) skip )
+          ((LCB statement_list RCB                  ) $2 )
+          ((LCB declaration_list RCB                ) $2 )
+          ((LCB declaration_list statement_list RCB ) (append $2 $3) ))
 
         (declaration_list 
           ((declaration                  ) (list $1))
