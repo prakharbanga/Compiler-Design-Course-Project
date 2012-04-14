@@ -5,4 +5,4 @@
          "parser.rkt"
          "semantic.rkt")
 
-(semantic (objc-parser (get-lexgen-file (vector-ref (current-command-line-arguments) 0))))
+(begin (semantic (objc-parser (get-lexgen-file (vector-ref (current-command-line-arguments) 0)))) (newline) (display cur_sym_tab) (newline))

@@ -1,8 +1,1 @@
-int fdks;
-
-int a(char b);
-
-int b(float c);
-
-int main(int def, char far) {
-}
+int fdks=df;

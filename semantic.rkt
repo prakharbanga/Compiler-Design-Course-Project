@@ -41,5 +41,15 @@
 
   (define (sym_tab_ins! decl_name decl_fields) (insert! cur_sym_tab decl_name decl_fields))
 
+  (define (insert-all! decls type) 
+    (for-each (lambda (decl) (sym_tab_ins! (cadr decl) 
+                                           (match (car decl) 
+                                                  ['var_ (make-hash [list (cons __mem (new___var)) (cons __type type)])]
+                                                  ['func (make-hash [list (cons __label (new_label)) (cons __type type)])]))) decls))
+
   (define (semantic ast)
-    ast))
+    (if (not (null? ast)) (append
+                          (match (car ast)
+                                 [(list 'decl (list type (list decls stmts ))) (begin (insert-all! decls type) stmts)])
+                          (semantic (cdr ast)))
+      null)))

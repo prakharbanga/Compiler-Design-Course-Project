@@ -242,7 +242,7 @@
 
         (init_declarator 
           ((declarator                    ) (list (list $1) (list skip)))
-          ((declarator ASSIGN initializer ) (list (list $1) (assgn no__op_assgn $1 $3))))
+          ((declarator ASSIGN initializer ) (list (list $1) (assgn no__op_assgn (cadr $1) $3))))
 
         (declspec_type 
           ((DLLIMPORT ) #f )
@@ -339,11 +339,11 @@
           ((direct_declarator         ) $1 ))
 
         (direct_declarator
-          ((identifier                                    ) (tree var_ $1    ))
+          ((identifier                                    ) (list var_ $1    ))
           ((LB declarator RB                              ) #f               )
           ((direct_declarator LSB constant_expression RSB ) #f               )
           ((direct_declarator LSB RSB                     ) #f               )
-          ((direct_declarator LB parameter_type_list RB   ) (tree func $1 $3 ))
+          ((direct_declarator LB parameter_type_list RB   ) (list func $1 $3 ))
           ((direct_declarator LB identifier_list RB       ) #f               )
           ((direct_declarator LB RB                       ) #f               ))
 
