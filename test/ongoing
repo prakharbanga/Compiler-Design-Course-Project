@@ -1,2 +1,11 @@
-int b(int r, char dsfa);
-int b(int t, char abc) {}
+int a, fef;
+
+
+int b();
+
+int b() {}
+int main();
+
+int main() { int a, b = 1, c = 2, d = 3, e = 4, f = 5, g = 6;
+   a = b + c + d + e + f + g;
+}

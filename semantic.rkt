@@ -39,6 +39,7 @@
   (define __parlist "__parlist")
   (define __label "__label")
   (define __symtab "__symtab")
+  (define __whatisit "__whatisit")
 
   (define (sym_tab_ins! decl_name decl_fields) (insert! cur_sym_tab decl_name decl_fields))
 
@@ -46,8 +47,8 @@
     (for-each (lambda (decl) (let [(func_name (cadr decl))] 
                                (sym_tab_ins! func_name
                                              (match (car decl) 
-                                                    ['var_ (make-hash [list (cons __mem (new___var)) (cons __type type)])]
-                                                    ['func (make-hash [list (cons __label (if (equal? func_name "main") "main" (new_label))) (cons __type type) (cons __parlist (caddr decl))])])))) decls))
+                                                    ['var_ (make-hash [list (cons __mem (new___var)) (cons __type type) (cons __whatisit 'var_)])]
+                                                    ['func (make-hash [list (cons __label (if (equal? func_name "main") "main" (new_label))) (cons __type type) (cons __parlist (caddr decl)) (cons __whatisit 'func)])])))) decls))
 
   (define (semantic ast)
     (begin ;(display ast) (newline)
@@ -75,7 +76,7 @@
                                                         (set! cur_sym_tab (parent cur_sym_tab))
                                                         (list (list 'defi (list func_name inner)))))))]
                                           ['skip '()]
-                                          [(and binding (list 'assgn (list op1 op2))) (display op1) (newline) (display op2) (newline) (get-gen-type! (expr-type op1) (expr-type op2)) (list binding)]
+                                          [(and binding (list 'assgn (list op1 op2))) (get-gen-type! (expr-type op1) (expr-type op2)) (list binding)]
                                           [(and binding (list 'return expr)) (get-gen-type! (expr-type expr) (get_ret_type cur_sym_tab )) binding]
                                           [(and binding (list 'return)) (get-gen-type! voitype (get_ret_type cur_sym_tab )) binding]
                                           [(and binding (list 'func_call (list 'identf func_name) par_list))
