@@ -1,7 +1,4 @@
-int main(int b);
+int a = 10;
 
-int main(int b) { int a; a = b;}
-
-void a();
-
-void a() { char a; float c; c *= a; }
+int m(char b);
+int m(char b) { char c = b; }

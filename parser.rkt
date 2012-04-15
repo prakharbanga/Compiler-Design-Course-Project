@@ -245,7 +245,7 @@
 
         (init_declarator 
           ((declarator                    ) (list (list $1) (list skip)))
-          ((declarator ASSIGN initializer ) (list (list $1) (assgn no__op_assgn (cadr $1) $3))))
+          ((declarator ASSIGN initializer ) (list (list $1) (list (assgn no__op_assgn (list identf (cadr $1)) $3)))))
 
         (declspec_type 
           ((DLLIMPORT ) #f )
