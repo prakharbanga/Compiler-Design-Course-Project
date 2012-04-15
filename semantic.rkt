@@ -66,7 +66,8 @@
                                                       (let [(par1 (hash-ref this_entry __parlist))
                                                             (par2 (caddr declarator))]
                                                         (if (not (equal? (length par1) (length par2))) (error "Wrong number of arguments.") #f)
-                                                        (for-each (lambda (d1 d2) (if (not (equal? (car d1) (car d2))) (error "Wrong parameter types.") #f)) par1 par2))
+                                                        (for-each (lambda (d1 d2) (if (not (equal? (car d1) (car d2))) (error "Wrong parameter types.") #f)) par1 par2)
+                                                        (hash-set! this_entry __parlist par2))
                                                       (hash-set! this_entry __symtab inner_sym_tab)
                                                       (set! cur_sym_tab inner_sym_tab)
                                                       (for-each (lambda (parameter) (insert-all! (cdr parameter) (car parameter))) (caddr declarator))
@@ -78,11 +79,11 @@
                                           [(and binding (list 'return expr)) (get-gen-type! (expr-type expr) (get_ret_type cur_sym_tab )) binding]
                                           [(and binding (list 'return)) (get-gen-type! voitype (get_ret_type cur_sym_tab )) binding]
                                           [(and binding (list 'func_call (list 'identf func_name) par_list))
-                                                (let* [(func_entry (lookup cur_sym_tab func_name))
-                                                       (def_par_list (hash-ref func_entry __parlist))]
-                                                  (if (not (equal? (length par_list) (length def_par_list))) (error "Wrong number of arguments") null)
-                                                  (for-each (lambda (par1 par2) (get-gen-type! (expr-type par1) (car par2))) par_list def_par_list)
-                                                  binding)])
+                                           (let* [(func_entry (lookup cur_sym_tab func_name))
+                                                  (def_par_list (hash-ref func_entry __parlist))]
+                                             (if (not (equal? (length par_list) (length def_par_list))) (error "Wrong number of arguments") null)
+                                             (for-each (lambda (par1 par2) (get-gen-type! (expr-type par1) (car par2))) par_list def_par_list)
+                                             binding)])
                                    (semantic (cdr ast)))
              null))
     )
@@ -96,9 +97,9 @@
            [(list 'identf id) (hash-ref (lookup cur_sym_tab id) __type)]
            [(list 'constn val) (if (regexp-match (regexp "\\.") val) flotype inttype)]
            [(list 'func_call (list 'identf func_name) par_list)
-                 (let* [(func_entry (lookup cur_sym_tab func_name))
-                        (def_par_list (hash-ref func_entry __parlist))
-                        (type (hash-ref func_entry __type))]
-                   (if (not (equal? (length par_list) (length def_par_list))) (error "Wrong number of arguments") null)
-                   (for-each (lambda (par1 par2) (get-gen-type! (expr-type par1) (car par2))) par_list def_par_list)
-                   type)])))
+            (let* [(func_entry (lookup cur_sym_tab func_name))
+                   (def_par_list (hash-ref func_entry __parlist))
+                   (type (hash-ref func_entry __type))]
+              (if (not (equal? (length par_list) (length def_par_list))) (error "Wrong number of arguments") null)
+              (for-each (lambda (par1 par2) (get-gen-type! (expr-type par1) (car par2))) par_list def_par_list)
+              type)])))

@@ -1,6 +1,2 @@
-int m();
-char b(int r);
-
-int m() { b(b(4)); }
-
-char b(int r) {}
+int b(int r, char dsfa);
+int b(int t, char abc) {}
