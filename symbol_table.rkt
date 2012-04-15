@@ -1,10 +1,10 @@
 (module symbol_table racket
   (provide (all-defined-out))
 
-  (struct symbol_table (parent table) #:transparent)
+  (struct symbol_table (parent table ret_type) #:transparent)
 
-  (define (new_symbol_table parent)
-    (symbol_table parent (make-hash)))
+  (define (new_symbol_table parent [ret_type #f])
+    (symbol_table parent (make-hash) ret_type))
 
   (define (insert! sym_tab lexeme attrs)
     (let ([tab (symbol_table-table sym_tab)])
@@ -21,4 +21,8 @@
           (error (string-append "Symbol " lexeme " doesn't exist."))))))
 
   (define (parent sym_tab)
-    (symbol_table-parent sym_tab)))
+    (symbol_table-parent sym_tab))
+
+  (define (get_ret_type sym_tab)
+    (symbol_table-ret_type sym_tab))
+  )

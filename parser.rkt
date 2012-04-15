@@ -80,6 +80,7 @@
 
   (define identf 'identf)
   (define constn 'constn)
+  (define return 'return)
 
   ; Some macros
 
@@ -412,7 +413,7 @@
           ((expression_statement ) $1 )
           ((selection_statement  ) #f )
           ((iteration_statement  ) #f )
-          ((jump_statement       ) #f ))
+          ((jump_statement       ) $1 ))
 
         (labeled_statement 
           ((identifier COLON statement               ) #f )
@@ -452,8 +453,8 @@
           ((GOTO identifier SEMICOLON   ) #f )
           ((CONTINUE SEMICOLON          ) #f )
           ((BREAK SEMICOLON             ) #f )
-          ((RETURN SEMICOLON            ) #f )
-          ((RETURN expression SEMICOLON ) #f ))
+          ((RETURN SEMICOLON            ) (list (list return)))
+          ((RETURN expression SEMICOLON ) (list (list return (car $2)))))
 
         (translation_unit 
           ((external_declaration                  ) $1 )

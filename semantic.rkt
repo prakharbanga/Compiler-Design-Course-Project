@@ -55,7 +55,7 @@
                                    (match (car ast)
                                           [(list 'decl (list type (list decls stmts ))) (begin (insert-all! decls type) (semantic stmts))]
                                           [(list 'defi (list type declarator stmts))
-                                           (let [(inner_sym_tab (new_symbol_table cur_sym_tab))] 
+                                           (let [(inner_sym_tab (new_symbol_table cur_sym_tab type))] 
                                              (begin (let* [(func_name (cadr declarator))
                                                            (this_entry (lookup cur_sym_tab func_name))]
                                                       (if (not (equal? type (hash-ref this_entry __type))) (error "Wrong return type.") #f)
@@ -73,7 +73,9 @@
                                                       (let [(inner (semantic stmts))]
                                                         (set! cur_sym_tab (parent cur_sym_tab)) (list (list 'defi (list func_name inner)))))))]
                                           ['skip '()]
-                                          [(and binding (list 'assgn (list op1 op2))) (display op1) (newline) (display op2) (newline) (get-gen-type! (expr-type op1) (expr-type op2)) (list binding)])
+                                          [(and binding (list 'assgn (list op1 op2))) (display op1) (newline) (display op2) (newline) (get-gen-type! (expr-type op1) (expr-type op2)) (list binding)]
+                                          [(and binding (list 'return expr)) (get-gen-type! (expr-type expr) (get_ret_type cur_sym_tab )) binding]
+                                          [(and binding (list 'return)) (get-gen-type! voitype (get_ret_type cur_sym_tab )) binding])
                                    (semantic (cdr ast)))
              null))
     )
