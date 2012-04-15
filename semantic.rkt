@@ -49,6 +49,7 @@
                                                   ['func (make-hash [list (cons __label (new_label)) (cons __type type) (cons __parlist (caddr decl))])]))) decls))
 
   (define (semantic ast)
+    (begin (display ast) (newline)
     (if (not (null? ast)) (append
                             (match (car ast)
                                    [(list 'decl (list type (list decls stmts ))) (begin (insert-all! decls type) stmts)]
@@ -72,7 +73,7 @@
                                    ['skip '()]
                                    [(and binding (list 'assgn (list op1 op2))) (display op1) (newline) (display op2) (newline) (get-gen-type! (expr-type op1) (expr-type op2)) binding])
                             (semantic (cdr ast)))
-      null))
+      null)))
 
   (define (get-gen-type! t1 t2)
     (if (equal? t1 t2) t1 (error "Type mismatch")))

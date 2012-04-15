@@ -4,4 +4,4 @@ int main(int b) { int a; a = b;}
 
 void a();
 
-void a() { int a, c; c *= a; }
+void a() { char a; float c; c *= a; }

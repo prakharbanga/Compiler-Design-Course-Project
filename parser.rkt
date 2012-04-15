@@ -214,7 +214,7 @@
 
         (expression 
           ((assignment_expression                  ) (list $1))
-          ((expression COMMA assignment_expression ) (append $1 $3 )))
+          ((expression COMMA assignment_expression ) (append $1 (list $3))))
 
         (constant_expression 
           ((conditional_expression ) #f ))
@@ -375,7 +375,7 @@
 
         (identifier_list 
           ((identifier                       ) (list $1))
-          ((identifier_list COMMA identifier ) (append $1 (list $1))))
+          ((identifier_list COMMA identifier ) (append $1 (list $3))))
 
         (type_name 
           ((specifier_qualifier_list                     ) $1 )
@@ -427,7 +427,7 @@
 
         (declaration_list 
           ((declaration                  ) (list $1))
-          ((declaration_list declaration ) (append $1 $2)))
+          ((declaration_list declaration ) (append $1 (list $2))))
 
         (statement_list 
           ((statement                ) $1            )
