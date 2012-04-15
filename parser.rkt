@@ -32,6 +32,7 @@
   (define decl 'decl)
   (define skip 'skip)
   (define cast 'cast)
+  (define func_call 'func_call)
 
   ; Arithmetic operators
   (define mulop 'mulop)
@@ -113,16 +114,16 @@
         (postfix_expression
           ((primary_expression                                ) $1 )
           ((postfix_expression LSB expression RSB             ) #f )
-          ((postfix_expression LB RB                          ) #f )
-          ((postfix_expression LB argument_expression_list RB ) #f )
+          ((postfix_expression LB RB                          ) (list func_call $1 null))
+          ((postfix_expression LB argument_expression_list RB ) (list func_call $1 $3 ))
           ((postfix_expression DOT identifier                 ) #f )
           ((postfix_expression PTR_OP identifier              ) #f )
           ((postfix_expression INC_OP                         ) #f )
           ((postfix_expression DEC_OP                         ) #f ))
 
         (argument_expression_list 
-          ((assignment_expression                                ) #f )
-          ((argument_expression_list COMMA assignment_expression ) #f ))
+          ((assignment_expression                                ) (list $1) )
+          ((argument_expression_list COMMA assignment_expression ) (append $1 (list $3))))
 
         (unary_expression
           ((postfix_expression             ) $1 )

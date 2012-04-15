@@ -71,11 +71,18 @@
                                                       (set! cur_sym_tab inner_sym_tab)
                                                       (for-each (lambda (parameter) (insert-all! (cdr parameter) (car parameter))) (caddr declarator))
                                                       (let [(inner (semantic stmts))]
-                                                        (set! cur_sym_tab (parent cur_sym_tab)) (list (list 'defi (list func_name inner)))))))]
+                                                        (set! cur_sym_tab (parent cur_sym_tab))
+                                                        (list (list 'defi (list func_name inner)))))))]
                                           ['skip '()]
                                           [(and binding (list 'assgn (list op1 op2))) (display op1) (newline) (display op2) (newline) (get-gen-type! (expr-type op1) (expr-type op2)) (list binding)]
                                           [(and binding (list 'return expr)) (get-gen-type! (expr-type expr) (get_ret_type cur_sym_tab )) binding]
-                                          [(and binding (list 'return)) (get-gen-type! voitype (get_ret_type cur_sym_tab )) binding])
+                                          [(and binding (list 'return)) (get-gen-type! voitype (get_ret_type cur_sym_tab )) binding]
+                                          [(and binding (list 'func_call (list 'identf func_name) par_list))
+                                                (let* [(func_entry (lookup cur_sym_tab func_name))
+                                                       (def_par_list (hash-ref func_entry __parlist))]
+                                                  (if (not (equal? (length par_list) (length def_par_list))) (error "Wrong number of arguments") null)
+                                                  (for-each (lambda (par1 par2) (get-gen-type! (expr-type par1) (car par2))) par_list def_par_list)
+                                                  binding)])
                                    (semantic (cdr ast)))
              null))
     )
@@ -88,6 +95,10 @@
            [(list _ (list op1 op2)) (let [(op1-type (expr-type op1)) (op2-type (expr-type op2))] (get-gen-type! op1-type op2-type))]
            [(list 'identf id) (hash-ref (lookup cur_sym_tab id) __type)]
            [(list 'constn val) (if (regexp-match (regexp "\\.") val) flotype inttype)]
-           )))
-
-
+           [(list 'func_call (list 'identf func_name) par_list)
+                 (let* [(func_entry (lookup cur_sym_tab func_name))
+                        (def_par_list (hash-ref func_entry __parlist))
+                        (type (hash-ref func_entry __type))]
+                   (if (not (equal? (length par_list) (length def_par_list))) (error "Wrong number of arguments") null)
+                   (for-each (lambda (par1 par2) (get-gen-type! (expr-type par1) (car par2))) par_list def_par_list)
+                   type)])))
