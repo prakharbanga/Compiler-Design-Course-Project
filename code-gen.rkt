@@ -8,18 +8,19 @@
                           "\t.data\n"
                           (string-join (flatten (make-data cur_sym_tab)) "\n")
                           "\n"
+                          "\t.text\n"
                           (make-code ir cur_sym_tab)))
 
 
   (define (make-data sym_tab)
     (hash-map (symbol_table-table sym_tab) (lambda (id entry) (match (hash-ref entry __whatisit)
                                                                      ['var_ (match (hash-ref entry __type)
-                                                                                   ['inttype (string-append (hash-ref entry __mem) ": .word")]
+                                                                                   ['inttype (string-append (hash-ref entry __mem) ": .word 0")]
                                                                                    [_ ""])]
                                                                      ['func (make-data (hash-ref entry __symtab))]))))
 
   (define (make-code ir sym_tab)
-    (begin (display ir) (newline)
+    (begin ;(display ir) (newline)
            (if (not (null? ir)) (string-append
                                   (match (car ir)
                                          [(list 'defi (list func_name inner))
@@ -46,10 +47,19 @@
                                                                      (make-code (list op2) sym_tab)
                                                                      "lw $t0, 4($sp)" "\n"
                                                                      "lw $t1, 8($sp)" "\n"
-                                                                     "add $t0, $t1, $t0" "\n"
+                                                                     (hash-ref mips-op-hash op) "$t0, $t1, $t0" "\n"
                                                                      "addi $sp, -4" "\n"
                                                                      "sw $t0, 4($sp)" "\n")])
                                   (make-code (cdr ir) sym_tab)) "")))
+
+  (define mips-op-hash
+    (make-hash '((addop . "add")
+                 (subop . "sub")
+                 (andop . "and")
+                 (or_op . "or")
+                 (xorop . "xor")
+                 (lefop . "sll")
+                 (rigop . "srl"))))
 
   (define-syntax-rule (get_memory_loc id sym_tab) (hash-ref (lookup sym_tab id) __mem)))
 

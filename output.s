@@ -1,18 +1,99 @@
 	.data
-var___3:	.word	6   # b
-var___2:	.word	100 # a
-var___4:	.word	20  # c
+var___2: .word 0
+var___1: .word 0
+var___8: .word 0
+var___7: .word 0
+var___9: .word 0
+var___4: .word 0
+var___3: .word 0
+var___6: .word 0
+var___5: .word 0
 	.text
 label_1:
-
-
-
-lw $t0, var___3
-
-move $t1, $t0
+main:
+li $t0, 1
+sw $t0, ($sp)
+addi $sp, -4
+lw $t0, 4($sp)
+sw $t0, var___4
+addi $sp, 4
+li $t0, 2
+sw $t0, ($sp)
+addi $sp, -4
+lw $t0, 4($sp)
+sw $t0, var___5
+addi $sp, 4
+li $t0, 3
+sw $t0, ($sp)
+addi $sp, -4
+lw $t0, 4($sp)
+sw $t0, var___6
+addi $sp, 4
+li $t0, 4
+sw $t0, ($sp)
+addi $sp, -4
+lw $t0, 4($sp)
+sw $t0, var___7
+addi $sp, 4
+li $t0, 5
+sw $t0, ($sp)
+addi $sp, -4
+lw $t0, 4($sp)
+sw $t0, var___8
+addi $sp, 4
+li $t0, 6
+sw $t0, ($sp)
+addi $sp, -4
+lw $t0, 4($sp)
+sw $t0, var___9
+addi $sp, 4
 lw $t0, var___4
-move $t2, $t0
-add $t0, $t1, $t2
+sw $t0, ($sp)
+addi $sp, -4
+lw $t0, var___5
+sw $t0, ($sp)
+addi $sp, -4
+lw $t0, 4($sp)
+lw $t1, 8($sp)
+sub$t0, $t1, $t0
+addi $sp, -4
+sw $t0, 4($sp)
+lw $t0, var___6
+sw $t0, ($sp)
+addi $sp, -4
+lw $t0, 4($sp)
+lw $t1, 8($sp)
+sub$t0, $t1, $t0
+addi $sp, -4
+sw $t0, 4($sp)
+lw $t0, var___7
+sw $t0, ($sp)
+addi $sp, -4
+lw $t0, 4($sp)
+lw $t1, 8($sp)
+add$t0, $t1, $t0
+addi $sp, -4
+sw $t0, 4($sp)
+lw $t0, var___8
+sw $t0, ($sp)
+addi $sp, -4
+lw $t0, 4($sp)
+lw $t1, 8($sp)
+add$t0, $t1, $t0
+addi $sp, -4
+sw $t0, 4($sp)
+lw $t0, var___9
+sw $t0, ($sp)
+addi $sp, -4
+lw $t0, 4($sp)
+lw $t1, 8($sp)
+add$t0, $t1, $t0
+addi $sp, -4
+sw $t0, 4($sp)
+lw $t0, 4($sp)
+sw $t0, var___3
+addi $sp, 4
 
-sw $t0, var___2
-
+li $v0, 1
+lw $a0, var___3
+syscall
