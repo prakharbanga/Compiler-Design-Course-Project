@@ -50,25 +50,41 @@
 
   (define (semantic ast)
     (if (not (null? ast)) (append
-                          (match (car ast)
-                                 [(list 'decl (list type (list decls stmts ))) (begin (insert-all! decls type) stmts)]
-                                 [(list 'defi (list type declarator stmts)) 
-                                  (let [(inner_sym_tab (new_symbol_table cur_sym_tab))] 
-                                    (begin (let [(this_entry (lookup cur_sym_tab (cadr declarator)))]
-                                             (if (not (equal? type (hash-ref this_entry __type))) (error "Wrong return type") #f)
-                                             (display (hash-ref this_entry __parlist))
-                                             (newline)
-                                             (display (caddr declarator))
-                                             (newline)
-                                             (let [(par1 (hash-ref this_entry __parlist))
-                                                   (par2 (caddr declarator))]
-                                               (if (not (equal? (length par1) (length par2))) (error "Wrong number of arguments") #f)
-                                               (for-each (lambda (d1 d2) (if (not (equal? (car d1) (car d2))) (error "Wrong types") #f)) par1 par2))
-                                             (hash-set! this_entry __symtab inner_sym_tab))
-                                           (set! cur_sym_tab inner_sym_tab)
-                                           (for-each (lambda (parameter) (insert-all! (cdr parameter) (car parameter))) (caddr declarator))
-                                           (set! cur_sym_tab (parent cur_sym_tab))
-                                           stmts))])
-                                 (semantic (cdr ast)))
-                          null))
-  )
+                            (match (car ast)
+                                   [(list 'decl (list type (list decls stmts ))) (begin (insert-all! decls type) stmts)]
+                                   [(list 'defi (list type declarator stmts)) 
+                                    (let [(inner_sym_tab (new_symbol_table cur_sym_tab))] 
+                                      (begin (let [(this_entry (lookup cur_sym_tab (cadr declarator)))]
+                                               (if (not (equal? type (hash-ref this_entry __type))) (error "Wrong return type.") #f)
+                                               ;(display (hash-ref this_entry __parlist))
+                                               ;(newline)
+                                               ;(display (caddr declarator))
+                                               ;(newline)
+                                               (let [(par1 (hash-ref this_entry __parlist))
+                                                     (par2 (caddr declarator))]
+                                                 (if (not (equal? (length par1) (length par2))) (error "Wrong number of arguments.") #f)
+                                                 (for-each (lambda (d1 d2) (if (not (equal? (car d1) (car d2))) (error "Wrong parameter types.") #f)) par1 par2))
+                                               (hash-set! this_entry __symtab inner_sym_tab))
+                                             (set! cur_sym_tab inner_sym_tab)
+                                             (for-each (lambda (parameter) (insert-all! (cdr parameter) (car parameter))) (caddr declarator))
+                                             (let [(inner (semantic stmts))]
+                                               (set! cur_sym_tab (parent cur_sym_tab)) inner)))]
+                                   ['skip '()]
+                                   [(list 'assgn (list op1 op2)) (display op1) (newline) (display op2) (newline) (list 'assgn (list (expr-semantic op1) (expr-semantic op2)))])
+                            (semantic (cdr ast)))
+      null))
+
+  (define (expr-semantic expr)
+    (match expr
+      [(list 'mulop (list op1 op2)) (list 'mulop (list (expr-semantic op1) (expr-semantic op2)))]
+      [(list 'divop (list op1 op2)) (list 'divop (list (expr-semantic op1) (expr-semantic op2)))]
+      [(list 'modop (list op1 op2)) (list 'modop (list (expr-semantic op1) (expr-semantic op2)))]
+      [(list 'addop (list op1 op2)) (list 'addop (list (expr-semantic op1) (expr-semantic op2)))]
+      [(list 'subop (list op1 op2)) (list 'subop (list (expr-semantic op1) (expr-semantic op2)))]
+      [(list 'lefop (list op1 op2)) (list 'lefop (list (expr-semantic op1) (expr-semantic op2)))]
+      [(list 'rigop (list op1 op2)) (list 'rigop (list (expr-semantic op1) (expr-semantic op2)))]
+      [(list 'andop (list op1 op2)) (list 'andop (list (expr-semantic op1) (expr-semantic op2)))]
+      [(list 'xorop (list op1 op2)) (list 'xorop (list (expr-semantic op1) (expr-semantic op2)))]
+      [(list 'or_op (list op1 op2)) (list 'or_op (list (expr-semantic op1) (expr-semantic op2)))]
+      [(cons 'identf id) (hash-ref (lookup cur_sym_tab id) __mem)]))
+    )

@@ -342,13 +342,13 @@
           ((direct_declarator         ) $1 ))
 
         (direct_declarator
-          ((identifier                                    ) (list var_ $1    ))
-          ((LB declarator RB                              ) #f               )
-          ((direct_declarator LSB constant_expression RSB ) #f               )
-          ((direct_declarator LSB RSB                     ) #f               )
-          ((direct_declarator LB parameter_type_list RB   ) (list func (cadr $1) $3 ))
-          ((direct_declarator LB identifier_list RB       ) #f               )
-          ((direct_declarator LB RB                       ) #f               ))
+          ((identifier                                    ) (list var_ $1       ))
+          ((LB declarator RB                              ) #f                  )
+          ((direct_declarator LSB constant_expression RSB ) #f                  )
+          ((direct_declarator LSB RSB                     ) #f                  )
+          ((direct_declarator LB parameter_type_list RB   ) (list func (cadr $1 ) $3   ))
+          ((direct_declarator LB identifier_list RB       ) #f                  )
+          ((direct_declarator LB RB                       ) (list func (cadr $1 ) null )))
 
         (pointer 
           ((ASTERISK                             ) #f )
@@ -420,10 +420,10 @@
           ((DEFAULT COLON statement                  ) #f ))
 
         (compound_statement 
-          ((LCB RCB                                 ) skip )
+          ((LCB RCB                                 ) (list skip))
           ((LCB statement_list RCB                  ) $2 )
           ((LCB declaration_list RCB                ) $2 )
-          ((LCB declaration_list statement_list RCB ) (append $2 $3) ))
+          ((LCB declaration_list statement_list RCB ) (append $2 $3)))
 
         (declaration_list 
           ((declaration                  ) (list $1))
