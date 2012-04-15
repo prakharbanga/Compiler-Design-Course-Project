@@ -43,10 +43,11 @@
   (define (sym_tab_ins! decl_name decl_fields) (insert! cur_sym_tab decl_name decl_fields))
 
   (define (insert-all! decls type) 
-    (for-each (lambda (decl) (sym_tab_ins! (cadr decl) 
-                                           (match (car decl) 
-                                                  ['var_ (make-hash [list (cons __mem (new___var)) (cons __type type)])]
-                                                  ['func (make-hash [list (cons __label (new_label)) (cons __type type) (cons __parlist (caddr decl))])]))) decls))
+    (for-each (lambda (decl) (let [(func_name (cadr decl))] 
+                               (sym_tab_ins! func_name
+                                             (match (car decl) 
+                                                    ['var_ (make-hash [list (cons __mem (new___var)) (cons __type type)])]
+                                                    ['func (make-hash [list (cons __label (if (equal? func_name "main") "main" (new_label))) (cons __type type) (cons __parlist (caddr decl))])])))) decls))
 
   (define (semantic ast)
     (begin (display ast) (newline)

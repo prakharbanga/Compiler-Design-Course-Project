@@ -1,4 +1,5 @@
 int a = 10;
 
 int m(char b);
+
 int m(char b) { char c = b; }
