@@ -104,8 +104,8 @@
           ((translation_unit) $1))
 
         (primary_expression 
-          ((identifier       ) (cons identf $1 ))
-          ((CONSTANT         ) (cons constn $1 ))
+          ((identifier       ) (list identf $1 ))
+          ((CONSTANT         ) (list constn $1 ))
           ((STRING_LITERAL   ) #f              )
           ((LB expression RB ) #f              ))
 

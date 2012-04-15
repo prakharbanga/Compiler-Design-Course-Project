@@ -70,21 +70,18 @@
                                              (let [(inner (semantic stmts))]
                                                (set! cur_sym_tab (parent cur_sym_tab)) inner)))]
                                    ['skip '()]
-                                   [(list 'assgn (list op1 op2)) (display op1) (newline) (display op2) (newline) (list 'assgn (list (expr-semantic op1) (expr-semantic op2)))])
+                                   [(and binding (list 'assgn (list op1 op2))) (display op1) (newline) (display op2) (newline) (get-gen-type! (expr-type op1) (expr-type op2)) binding])
                             (semantic (cdr ast)))
       null))
 
-  (define (expr-semantic expr)
+  (define (get-gen-type! t1 t2)
+    (if (equal? t1 t2) t1 (error "Type mismatch")))
+
+  (define (expr-type expr)
     (match expr
-      [(list 'mulop (list op1 op2)) (list 'mulop (list (expr-semantic op1) (expr-semantic op2)))]
-      [(list 'divop (list op1 op2)) (list 'divop (list (expr-semantic op1) (expr-semantic op2)))]
-      [(list 'modop (list op1 op2)) (list 'modop (list (expr-semantic op1) (expr-semantic op2)))]
-      [(list 'addop (list op1 op2)) (list 'addop (list (expr-semantic op1) (expr-semantic op2)))]
-      [(list 'subop (list op1 op2)) (list 'subop (list (expr-semantic op1) (expr-semantic op2)))]
-      [(list 'lefop (list op1 op2)) (list 'lefop (list (expr-semantic op1) (expr-semantic op2)))]
-      [(list 'rigop (list op1 op2)) (list 'rigop (list (expr-semantic op1) (expr-semantic op2)))]
-      [(list 'andop (list op1 op2)) (list 'andop (list (expr-semantic op1) (expr-semantic op2)))]
-      [(list 'xorop (list op1 op2)) (list 'xorop (list (expr-semantic op1) (expr-semantic op2)))]
-      [(list 'or_op (list op1 op2)) (list 'or_op (list (expr-semantic op1) (expr-semantic op2)))]
-      [(cons 'identf id) (hash-ref (lookup cur_sym_tab id) __mem)]))
-    )
+      [(list _ (list op1 op2)) (let [(op1-type (expr-type op1)) (op2-type (expr-type op2))] (get-gen-type! op1-type op2-type))]
+      [(list 'identf id) (hash-ref (lookup cur_sym_tab id) __type)]
+      [(list 'constn val) (if (regexp-match (regexp "\\.") val) flotype inttype)]
+    )))
+
+

@@ -1,6 +1,6 @@
-int main(char b);
+int main(int b);
 
-int main(char b) { int a; a = b;}
+int main(int b) { int a; a = b;}
 
 void a();
 
