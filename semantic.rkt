@@ -50,7 +50,7 @@
                                                     ['func (make-hash [list (cons __label (if (equal? func_name "main") "main" (new_label))) (cons __type type) (cons __parlist (caddr decl))])])))) decls))
 
   (define (semantic ast)
-    (begin (display ast) (newline)
+    (begin ;(display ast) (newline)
            (if (not (null? ast)) (append
                                    (match (car ast)
                                           [(list 'decl (list type (list decls stmts ))) (begin (insert-all! decls type) (semantic stmts))]

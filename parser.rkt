@@ -101,6 +101,7 @@
       (end EOF)
       (error void)
       (tokens value-tokens op)
+      (suppress)
       (grammar
         (exp 
           ((translation_unit) $1))
