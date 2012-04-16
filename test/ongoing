@@ -1,5 +1,13 @@
 int main();
 
-int main() { int a;
-a = 5 + 6 + 7;
-}
+int main() {
+
+   int a = 5, b; 
+   print(a); 
+   
+   b = a + 67 - 45;
+   print(b);
+
+   b = 56 - (27 + 5);
+   print(b);
+   }

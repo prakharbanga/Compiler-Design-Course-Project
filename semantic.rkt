@@ -52,42 +52,42 @@
 
   (define (semantic ast)
     (begin ;(display ast) (newline)
-           (if (not (null? ast)) (append
-                                   (match (car ast)
-                                          [(list 'decl (list type (list decls stmts ))) (begin (insert-all! decls type) (semantic stmts))]
-                                          [(list 'defi (list type declarator stmts))
-                                           (let [(inner_sym_tab (new_symbol_table cur_sym_tab type))] 
-                                             (begin (let* [(func_name (cadr declarator))
-                                                           (this_entry (lookup cur_sym_tab func_name))]
-                                                      (if (not (equal? type (hash-ref this_entry __type))) (error "Wrong return type.") #f)
-                                                      ;(display (hash-ref this_entry __parlist))
-                                                      ;(newline)
-                                                      ;(display (caddr declarator))
-                                                      ;(newline)
-                                                      (let [(par1 (hash-ref this_entry __parlist))
-                                                            (par2 (caddr declarator))]
-                                                        (if (not (equal? (length par1) (length par2))) (error "Wrong number of arguments.") #f)
-                                                        (for-each (lambda (d1 d2) (if (not (equal? (car d1) (car d2))) (error "Wrong parameter types.") #f)) par1 par2)
-                                                        (hash-set! this_entry __parlist par2))
-                                                      (hash-set! this_entry __symtab inner_sym_tab)
-                                                      (set! cur_sym_tab inner_sym_tab)
-                                                      (for-each (lambda (parameter) (insert-all! (cdr parameter) (car parameter))) (caddr declarator))
-                                                      (let [(inner (semantic stmts))]
-                                                        (set! cur_sym_tab (parent cur_sym_tab))
-                                                        (list (list 'defi (list func_name inner)))))))]
-                                          ['skip '()]
-                                          [(and binding (list 'assgn (list op1 op2))) (get-gen-type! (expr-type op1) (expr-type op2)) (list binding)]
-                                          [(and binding (list 'return expr)) (get-gen-type! (expr-type expr) (get_ret_type cur_sym_tab )) binding]
-                                          [(and binding (list 'return)) (get-gen-type! voitype (get_ret_type cur_sym_tab )) binding]
-                                          [(and binding (list 'func_call (list 'identf func_name) par_list))
-                                           (let* [(func_entry (lookup cur_sym_tab func_name))
-                                                  (def_par_list (hash-ref func_entry __parlist))]
-                                             (if (not (equal? (length par_list) (length def_par_list))) (error "Wrong number of arguments") null)
-                                             (for-each (lambda (par1 par2) (get-gen-type! (expr-type par1) (car par2))) par_list def_par_list)
-                                             binding)])
-                                   (semantic (cdr ast)))
-             null))
-    )
+      (if (not (null? ast)) (append 
+                                  (match (car ast)
+                                         [(list 'decl (list type (list decls stmts ))) (begin (insert-all! decls type) (semantic stmts))]
+                                         [(list 'defi (list type declarator stmts))
+                                          (let [(inner_sym_tab (new_symbol_table cur_sym_tab type))] 
+                                            (begin (let* [(func_name (cadr declarator))
+                                                          (this_entry (lookup cur_sym_tab func_name))]
+                                                     (if (not (equal? type (hash-ref this_entry __type))) (error "Wrong return type.") #f)
+                                                     ;(display (hash-ref this_entry __parlist))
+                                                     ;(newline)
+                                                     ;(display (caddr declarator))
+                                                     ;(newline)
+                                                     (let [(par1 (hash-ref this_entry __parlist))
+                                                           (par2 (caddr declarator))]
+                                                       (if (not (equal? (length par1) (length par2))) (error "Wrong number of arguments.") #f)
+                                                       (for-each (lambda (d1 d2) (if (not (equal? (car d1) (car d2))) (error "Wrong parameter types.") #f)) par1 par2)
+                                                       (hash-set! this_entry __parlist par2))
+                                                     (hash-set! this_entry __symtab inner_sym_tab)
+                                                     (set! cur_sym_tab inner_sym_tab)
+                                                     (for-each (lambda (parameter) (insert-all! (cdr parameter) (car parameter))) (caddr declarator))
+                                                     (let [(inner (semantic stmts))]
+                                                       (set! cur_sym_tab (parent cur_sym_tab))
+                                                       (list (list 'defi (list func_name inner)))))))]
+                                         ['skip null]
+                                         [(and binding (list 'assgn (list op1 op2))) (get-gen-type! (expr-type op1) (expr-type op2)) (list binding)]
+                                         [(and binding (list 'return expr)) (get-gen-type! (expr-type expr) (get_ret_type cur_sym_tab )) (list binding)]
+                                         [(and binding (list 'return)) (get-gen-type! voitype (get_ret_type cur_sym_tab )) (list binding)]
+                                         [(and binding (list 'func_call (list 'identf func_name) par_list))
+                                          (if (not (equal? func_name "print"))
+                                            (let* [(func_entry (lookup cur_sym_tab func_name))
+                                                   (def_par_list (hash-ref func_entry __parlist))]
+                                              (if (not (equal? (length par_list) (length def_par_list))) (error "Wrong number of arguments") null)
+                                              (for-each (lambda (par1 par2) (get-gen-type! (expr-type par1) (car par2))) par_list def_par_list)
+                                              (list binding)) (list binding))])
+                              (semantic (cdr ast)))
+        null)))
 
   (define (get-gen-type! t1 t2)
     (if (equal? t1 t2) t1 (error "Type mismatch")))

@@ -33,6 +33,7 @@
   (define skip 'skip)
   (define cast 'cast)
   (define func_call 'func_call)
+  (define expr 'expr)
 
   ; Arithmetic operators
   (define mulop 'mulop)
@@ -110,20 +111,20 @@
           ((identifier       ) (list identf $1 ))
           ((CONSTANT         ) (list constn $1 ))
           ((STRING_LITERAL   ) #f              )
-          ((LB expression RB ) #f              ))
+          ((LB expression RB ) $2              ))
 
         (postfix_expression
           ((primary_expression                                ) $1 )
           ((postfix_expression LSB expression RSB             ) #f )
           ((postfix_expression LB RB                          ) (list func_call $1 null))
-          ((postfix_expression LB argument_expression_list RB ) (list func_call $1 $3 ))
+          ((postfix_expression LB argument_expression_list RB ) (list func_call $1 $3))
           ((postfix_expression DOT identifier                 ) #f )
           ((postfix_expression PTR_OP identifier              ) #f )
           ((postfix_expression INC_OP                         ) #f )
           ((postfix_expression DEC_OP                         ) #f ))
 
         (argument_expression_list 
-          ((assignment_expression                                ) (list $1) )
+          ((assignment_expression                                ) (list $1))
           ((argument_expression_list COMMA assignment_expression ) (append $1 (list $3))))
 
         (unary_expression
@@ -216,8 +217,8 @@
           ((OR_ASSIGN    ) or__op_assgn ))
 
         (expression 
-          ((assignment_expression                  ) (list $1))
-          ((expression COMMA assignment_expression ) (append $1 (list $3))))
+          ((assignment_expression                  ) $1)
+          ((expression COMMA assignment_expression ) (tree expr $1 $3)))
 
         (constant_expression 
           ((conditional_expression ) #f ))
@@ -438,7 +439,7 @@
 
         (expression_statement 
           ((SEMICOLON            ) (list skip ))
-          ((expression SEMICOLON ) $1         ))
+          ((expression SEMICOLON ) (list $1   )))
 
         (selection_statement 
           ((IF LB expression RB statement                ) #f )

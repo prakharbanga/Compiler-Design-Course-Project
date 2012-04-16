@@ -6,6 +6,7 @@
 
   (define (code-gen ir) (string-append 
                           "\t.data\n"
+                          "newline: .asciiz \"\\n\"" "\n"
                           (string-join (flatten (make-data cur_sym_tab)) "\n")
                           "\n"
                           "\t.text\n"
@@ -29,11 +30,20 @@
                                          (hash-ref func_entry __label)
                                          ":\n" 
                                          (make-code inner (hash-ref func_entry __symtab))))]
-                                    [(list 'assgn (list (list 'identf id) op)) (string-append 
-                                                                                 (expr-code (list op) sym_tab)
-                                                                                 "lw $t0, ($sp)\n"
-                                                                                 "sw $t0, " (get_memory_loc id sym_tab) "\n"
-                                                                                 "addi $sp, 4" "\n")])
+                                    [(list 'assgn (list (list 'identf id) op)) 
+                                     (string-append 
+                                       (expr-code (list op) sym_tab)
+                                       "lw $t0, ($sp)" "\n"
+                                       "sw $t0, " (get_memory_loc id sym_tab) "\n"
+                                       "addi $sp, 4" "\n")]
+                                    [(list 'func_call (list 'identf "print") (list (list 'identf id)))
+                                     (string-append
+                                       "li $v0, 1" "\n"
+                                       "lw $a0, " (get_memory_loc id sym_tab) "\n"
+                                       "syscall" "\n"
+                                       "li $v0, 4" "\n"
+                                       "la $a0, newline" "\n"
+                                       "syscall" "\n")])
                              (make-code (cdr ir) sym_tab)) "")))
 
   (define (expr-code ir sym_tab)
