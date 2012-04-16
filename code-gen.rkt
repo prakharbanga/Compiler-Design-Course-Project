@@ -56,7 +56,8 @@
                                          "\t" "addi $sp, -4" "\n"
                                          "\t" "sw $t0, ($sp)" "\n"
                                          "\t" "j " (hash-ref func_entry __label) "\n"
-                                         return_label ":\n"))]
+                                         return_label ":\n"
+                                         "\taddi $sp, 4" "\n"))]
                                     [(list 'return expr)
                                      (if (equal? (symbol_table-func_name sym_tab) "main")
                                        (string-append

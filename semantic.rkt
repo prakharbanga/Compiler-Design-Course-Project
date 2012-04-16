@@ -40,6 +40,7 @@
   (define __label "__label")
   (define __symtab "__symtab")
   (define __whatisit "__whatisit")
+  (define __def "__def")
 
   (define (sym_tab_ins! decl_name decl_fields) (insert! cur_sym_tab decl_name decl_fields))
 
@@ -59,6 +60,7 @@
                                       (begin (let* [(func_name (cadr declarator))
                                                     (inner_sym_tab (new_symbol_table cur_sym_tab func_name type))
                                                     (this_entry (lookup cur_sym_tab func_name))]
+                                               (if (hash-has-key? this_entry __def) (error "Redefinition of function.") (hash-set! this_entry __def #t))
                                                (if (not (equal? type (hash-ref this_entry __type))) (error "Wrong return type.") #f)
                                                ;(display (hash-ref this_entry __parlist))
                                                ;(newline)

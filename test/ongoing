@@ -1,13 +1,47 @@
 int main();
 int b();
+int c();
+int d();
+int e();
+int f();
 
 int main() {
    int a = 5;
    b();
+   c();
+   d();
+   e();
+   f();
    print(a);
    return 0;
 }
 
 int b() {
-   return 5;
+   c();
+   d();
+   e();
+   f();
+   return 10;
+}
+
+int c() {
+   d();
+   e();
+   f();
+   return 10;
+}
+
+int d() {
+   e();
+   f();
+   return 10;
+}
+
+int e() {
+   f();
+   return 10;
+}
+
+int f() {
+   return 10;
 }
