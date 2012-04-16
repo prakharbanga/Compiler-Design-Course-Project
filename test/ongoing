@@ -1,50 +1,28 @@
 int main();
-int bo();
-int c();
-int d();
-int e();
-
+int b( int a );
 
 int main() {
-    int a = 5;
-    int b = 105;
-    bo();
-    print(a);
-    print(b);
-    return 0;
+   int a = 9;
+   if(a == 5) {
+      b(10);
+      a += 1;
+   }
+   else {
+      b(3);
+      a -= 1;
+   }
+   print(a);
+   return 0;
 }
 
-int bo() {
-    int a = 10;
-    int b = 110;
-    c();
-    print(a);
-    print(b);
-    return 0;
-}
-
-int c() {
-    int a = 15;
-    int b = 115;
-    d();
-    print(a);
-    print(b);
-    return 0;
-}
-
-int d() {
-    int a = 20;
-    int b = 120;
-    e();
-    print(a);
-    print(b);
-    return 0;
-}
-
-int e() {
-    int a = 25;
-    int b = 125;
-    print(a);
-    print(b);
-    return 0;
+int b( int x ) {
+   if( x <= 0 ) {
+      return 0;
+   }
+   else {
+      print(x);
+      b(x-1);
+      print(x);
+   }
+   return 0;
 }

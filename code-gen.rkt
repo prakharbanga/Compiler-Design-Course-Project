@@ -59,7 +59,7 @@
                                      (let [(func_entry (lookup sym_tab func_name))
                                            (return_label (new_codegen_label))]
                                        (let [(locals_mem_list (hash-ref
-                                                                (lookup (parent sym_tab) (symbol_table-func_name sym_tab))
+                                                                (lookup (get-glob-symtab sym_tab) (symbol_table-func_name (get-func-symtab sym_tab)))
                                                                 __localmemlist))]
                                          (string-append
                                            (store-locals-on-stack locals_mem_list)
@@ -84,8 +84,47 @@
                                          "\t" "lw $t0, ($sp)" "\n"
                                          "\t" "sw $t1, ($sp)" "\n"
                                          "\t" "jr $t0" "\n"
-                                         ))])
+                                         ))]
+                                    [(list 'if_stmt if_label else_label (list if_cond if_stmts else_stmts))
+                                     (let [(end_label (new_codegen_label))]
+                                       (string-append
+                                         (trans-cond if_cond if_label else_label sym_tab)
+                                         if_label ":\n"
+                                         (make-code if_stmts (hash-ref (lookup sym_tab if_label) __symtab))
+                                         "\t" "j " end_label "\n"
+                                         else_label ":\n"
+                                         (make-code else_stmts (hash-ref (lookup sym_tab else_label) __symtab))
+                                         end_label ":\n"))])
                              (make-code (cdr ir) sym_tab)) "")))
+
+  (define comp-conds
+    (make-hash (list (cons 'lesop "bgez")
+                     (cons 'greop "blez")
+                     (cons 'leqop "bgtz")
+                     (cons 'geqop "bltz"))))
+
+  (define eq-conds
+    (make-hash (list (cons 'equop "bne")
+                     (cons 'neqop "beq"))))
+
+  (define (trans-cond if_cond if_label else_label sym_tab)
+    (match if_cond
+           [(list op (list op1 op2))
+            (string-append
+              (expr-code (list op1) sym_tab)
+              (expr-code (list op2) sym_tab)
+              "\t" "lw $t1, ($sp)" "\n"
+              "\t" "add $sp, 4"    "\n"
+              "\t" "lw $t0, ($sp)" "\n"
+              "\t" "add $sp, 4"    "\n"
+              (if (hash-has-key? comp-conds op)
+                (string-append
+                  "\t" "sub $t0, $t0, $t1" "\n"
+                  "\t" (hash-ref comp-conds op) " $t0, " else_label "\n")
+                (string-append
+                  "\t" (hash-ref eq-conds op) " $t0, $t1, " else_label "\n")))]))
+
+
 
   (define (store-locals-on-stack local_list)
     (if (not (null? local_list))

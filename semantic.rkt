@@ -5,7 +5,13 @@
            "symbol_table.rkt")
 
   ; The global symbol table
-  (define cur_sym_tab (new_symbol_table #f))
+  (define cur_sym_tab (new_symbol_table #f 'global))
+
+  (define (get-func-symtab sym_tab)
+    (if (equal? (symbol_table-func_name sym_tab) 'inner) (get-func-symtab (parent sym_tab)) sym_tab))
+
+  (define (get-glob-symtab sym_tab)
+    (if (equal? (symbol_table-func_name sym_tab) 'global) sym_tab (get-func-symtab (parent sym_tab))))
 
   (define label_count 0)
   (define var___count 0)
@@ -84,8 +90,8 @@
                                                  (list (list 'defi (list func_name inner))))))]
                                      ['skip null]
                                      [(and binding (list 'assgn (list op1 op2))) (get-gen-type! (expr-type op1) (expr-type op2)) (list binding)]
-                                     [(and binding (list 'return expr)) (get-gen-type! (expr-type expr) (get_ret_type cur_sym_tab )) (list binding)]
-                                     [(and binding (list 'return)) (get-gen-type! voitype (get_ret_type cur_sym_tab )) (list binding)]
+                                     [(and binding (list 'return expr)) (get-gen-type! (expr-type expr) (get_ret_type (get-func-symtab cur_sym_tab) )) (list binding)]
+                                     [(and binding (list 'return)) (get-gen-type! voitype (get_ret_type (get-func-symtab cur_sym_tab) )) (list binding)]
                                      [(and binding (list 'func_call (list 'identf "print"  ) par_list)) (list binding)]
                                      [(and binding (list 'func_call (list 'identf func_name) par_list))
                                       (let* [(func_entry (lookup cur_sym_tab func_name))
@@ -94,9 +100,31 @@
                                                              (error "Not a function")))]
                                         (if (not (equal? (length par_list) (length def_par_list))) (error "Wrong number of arguments") null)
                                         (for-each (lambda (par1 par2) (get-gen-type! (expr-type par1) (car par2))) par_list def_par_list)
-                                        (list binding))])
+                                        (list binding))]
+                                     [(list 'if_stmt (list if_cond if_stmts else_stmts))
+                                      (if (equal? (expr-type if_cond) 'boolean)
+                                        (let [(if_label (new_label))
+                                              (else_label (new_label))]
+                                          (list (list 'if_stmt if_label else_label 
+                                                      (list if_cond 
+                                                            (begin 
+                                                              (set! cur_sym_tab (new_symbol_table cur_sym_tab 'inner))
+                                                              (let [(return(semantic if_stmts))]
+                                                                (insert! (parent cur_sym_tab) if_label (make-hash (list (cons __symtab cur_sym_tab)
+                                                                                                                        (cons __whatisit 'inner))))
+                                                                (set! cur_sym_tab (parent cur_sym_tab))
+                                                                return))
+                                                            (begin 
+                                                              (set! cur_sym_tab (new_symbol_table cur_sym_tab 'inner))
+                                                              (let [(return(semantic else_stmts))]
+                                                                (insert! (parent cur_sym_tab) else_label (make-hash (list (cons __symtab cur_sym_tab)
+                                                                                                                          (cons __whatisit 'inner))))
+                                                                (set! cur_sym_tab (parent cur_sym_tab))
+                                                                return))))))
+                                        (error "IF condition must be a relational expression(boolean)."))])
                               (semantic (cdr ast)))
         null)))
+
 
   (define (comp_localmemlist sym_tab)
     (hash-map (symbol_table-table sym_tab)
@@ -114,7 +142,12 @@
 
   (define (expr-type expr)
     (match expr
-           [(list _ (list op1 op2)) (let [(op1-type (expr-type op1)) (op2-type (expr-type op2))] (get-gen-type! op1-type op2-type))]
+           [(list op (list op1 op2)) (let* [(op1-type (expr-type op1)) 
+                                            (op2-type (expr-type op2)) 
+                                            (this_type (get-gen-type! op1-type op2-type))]
+                                       (if (member this_type operables)
+                                         (if (member op relational) 'boolean this_type)
+                                         (error "Operations are not possible for these types.")))]
            [(list 'identf id) (hash-ref (lookup cur_sym_tab id) __type)]
            [(list 'constn val) (if (regexp-match (regexp "\\.") val) flotype inttype)]
            [(list 'func_call (list 'identf func_name) par_list)
@@ -123,4 +156,9 @@
                    (type (hash-ref func_entry __type))]
               (if (not (equal? (length par_list) (length def_par_list))) (error "Wrong number of arguments") null)
               (for-each (lambda (par1 par2) (get-gen-type! (expr-type par1) (car par2))) par_list def_par_list)
-              type)])))
+              type)]))
+
+  (define relational '(lesop greop leqop geqop equop neqop))
+
+  (define operables '(shotype inttype lontype flotype doutype sigtype unstype)))
+

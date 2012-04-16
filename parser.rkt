@@ -414,7 +414,7 @@
           ((labeled_statement    ) #f )
           ((compound_statement   ) $1 )
           ((expression_statement ) $1 )
-          ((selection_statement  ) #f )
+          ((selection_statement  ) $1 )
           ((iteration_statement  ) #f )
           ((jump_statement       ) $1 ))
 
@@ -442,9 +442,9 @@
           ((expression SEMICOLON ) (list $1   )))
 
         (selection_statement 
-          ((IF LB expression RB statement                ) #f )
-          ((IF LB expression RB statement ELSE statement ) #f )
-          ((SWITCH LB expression RB statement            ) #f ))
+          ((IF LB expression RB statement                ) (list (tree 'if_stmt $3 $5 (list skip ))))
+          ((IF LB expression RB statement ELSE statement ) (list (tree 'if_stmt $3 $5 $7         )))
+          ((SWITCH LB expression RB statement            ) #f                                    ))
 
         (iteration_statement
           ((WHILE LB expression RB statement                                         ) #f )

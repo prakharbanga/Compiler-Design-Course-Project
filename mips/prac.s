@@ -2,17 +2,14 @@
 
 main:
 
-   la $t0, l1
-   sw $t0, ($sp)
-   lw $t0, ($sp)
-   jr $t0
+   li $t0, 0
+   bgtz $t0, l1
 
    li $v0, 1
-   li $a0, 999
+   li $a0, 99
    syscall
 
 l1:
    li $v0, 1
-   li $a0, 57
+   li $a0, 99
    syscall
-
