@@ -1,12 +1,16 @@
    .data
-
+label: .asciiz "l2"
    .text
 
 main:
-   li $t0, 1
-   add $t1, $t0, 2
+l1:   j l2
 
-   li $v0, 1
-   move $a0, $t1
-   syscall
+      li $v0, 1
+      li $a0, 50
+      syscall
+
+l2:   li $v0, 1
+      li $a0, 25
+      syscall
+      j l1
 
