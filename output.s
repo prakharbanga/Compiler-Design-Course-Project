@@ -23,12 +23,30 @@ codegen_label1:
 	addi $sp, -4
 	li $t0, 0
 	sw $t0, ($sp)
-	lw $t1, ($sp)
-	add $sp, 4
+	lw $t0, ($sp)
+	lw $t1, 4($sp)
+	sge$t0, $t1, $t0
+	addi $sp, 4
+	sw $t0, ($sp)
+	addi $sp, -4
+	lw $t0, var___2
+	sw $t0, ($sp)
+	addi $sp, -4
+	li $t0, 12
+	sw $t0, ($sp)
+	lw $t0, ($sp)
+	lw $t1, 4($sp)
+	slt$t0, $t1, $t0
+	addi $sp, 4
+	sw $t0, ($sp)
+	lw $t0, ($sp)
+	lw $t1, 4($sp)
+	or$t0, $t1, $t0
+	addi $sp, 4
+	sw $t0, ($sp)
 	lw $t0, ($sp)
 	add $sp, 4
-	sub $t0, $t0, $t1
-	bltz $t0, codegen_label2
+	beq $t0, $zero, codegen_label2
 label_1:
 	li $v0, 1
 	lw $a0, var___1
@@ -50,6 +68,26 @@ label_1:
 	lw $t0, ($sp)
 	sw $t0, var___1
 	addi $sp, 4
+	addi $sp, -4
+	lw $t0, var___2
+	sw $t0, ($sp)
+	addi $sp, -4
+	li $t0, 1
+	sw $t0, ($sp)
+	lw $t0, ($sp)
+	lw $t1, 4($sp)
+	add$t0, $t1, $t0
+	addi $sp, 4
+	sw $t0, ($sp)
+	lw $t0, ($sp)
+	sw $t0, var___2
+	addi $sp, 4
+	li $v0, 1
+	lw $a0, var___2
+	syscall
+	li $v0, 4
+	la $a0, newline
+	syscall
 	j codegen_label1
 codegen_label2:
 	li $v0, 10

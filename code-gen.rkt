@@ -107,34 +107,12 @@
                                          end_label ":\n"))])
                              (make-code (cdr ir) sym_tab)) "")))
 
-  (define false-comp-conds
-    (make-hash (list (cons 'lesop "bgez")
-                     (cons 'greop "blez")
-                     (cons 'leqop "bgtz")
-                     (cons 'geqop "bltz"))))
-
-  (define false-eq-conds
-    (make-hash (list (cons 'equop "bne")
-                     (cons 'neqop "beq"))))
-
   (define (trans-cond condit false_label sym_tab)
-    (match condit
-           [(list op (list op1 op2))
-            (string-append
-              (expr-code (list op1) sym_tab)
-              (expr-code (list op2) sym_tab)
-              "\t" "lw $t1, ($sp)" "\n"
-              "\t" "add $sp, 4"    "\n"
-              "\t" "lw $t0, ($sp)" "\n"
-              "\t" "add $sp, 4"    "\n"
-              (if (hash-has-key? false-comp-conds op)
-                (string-append
-                  "\t" "sub $t0, $t0, $t1" "\n"
-                  "\t" (hash-ref false-comp-conds op) " $t0, " false_label "\n")
-                (string-append
-                  "\t" (hash-ref false-eq-conds op) " $t0, $t1, " false_label "\n")))]))
-
-
+    (string-append
+      (expr-code (list condit) sym_tab)
+      "\t" "lw $t0, ($sp)" "\n"
+      "\t" "add $sp, 4"    "\n"
+      "\t" "beq $t0, $zero, " false_label "\n"))
 
   (define (store-locals-on-stack local_list)
     (if (not (null? local_list))
@@ -187,19 +165,25 @@
                                                                 (expr-code (list op2) sym_tab)
                                                                 "\t" "lw $t0, ($sp)" "\n"
                                                                 "\t" "lw $t1, 4($sp)" "\n"
-                                                                "\t" (hash-ref mips-op-hash op) "$t0, $t1, $t0" "\n"
+                                                                "\t" (hash-ref mips-op-hash1 op) "$t0, $t1, $t0" "\n"
                                                                 "\t" "addi $sp, 4" "\n"
                                                                 "\t" "sw $t0, ($sp)" "\n")])
                              (expr-code (cdr ir) sym_tab)) "")))
 
-  (define mips-op-hash
+  (define mips-op-hash1
     (make-hash '((addop . "add")
                  (subop . "sub")
-                 (andop . "and")
-                 (or_op . "or")
-                 (xorop . "xor")
-                 (lefop . "sll")
-                 (rigop . "srl"))))
+                 (ampop . "and")
+                 (pipop . "or")
+                 (lesop . "slt")
+                 (greop . "sgt")
+                 (leqop . "sle")
+                 (geqop . "sge")
+                 (equop . "seq")
+                 (neqop . "sne"))))
+
+  (define mips-op-hash2
+    (make-hash '()))
 
   (define-syntax-rule (get_memory_loc id sym_tab) (hash-ref (lookup sym_tab id) __mem)))
 

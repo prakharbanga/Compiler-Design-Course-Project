@@ -158,9 +158,17 @@
            [(list op (list op1 op2)) (let* [(op1-type (expr-type op1)) 
                                             (op2-type (expr-type op2)) 
                                             (this_type (get-gen-type! op1-type op2-type))]
-                                       (if (member this_type operables)
-                                         (if (member op relational) 'boolean this_type)
-                                         (error "Operations are not possible for these types.")))]
+                                       (if (member this_type ari-operables)
+                                         (if (member op ari-ari-operators)
+                                           this_type
+                                           (if (member op ari-boo-operators)
+                                             'boolean
+                                             (error "Unhandled arithmetic operator")))
+                                         (if (equal? this_type 'boolean)
+                                           (if (member op boo-operators)
+                                             'boolean
+                                             (error "Unhandled boolean operator"))
+                                           (error "Can't do operations on this type"))))]
            [(list 'identf id) (hash-ref (lookup cur_sym_tab id) __type)]
            [(list 'constn val) (if (regexp-match (regexp "\\.") val) flotype inttype)]
            [(list 'func_call (list 'identf func_name) par_list)
@@ -171,7 +179,11 @@
               (for-each (lambda (par1 par2) (get-gen-type! (expr-type par1) (car par2))) par_list def_par_list)
               type)]))
 
-  (define relational '(lesop greop leqop geqop equop neqop))
 
-  (define operables '(shotype inttype lontype flotype doutype sigtype unstype)))
+  (define ari-ari-operators '(mulop divop addop subop))
 
+  (define ari-boo-operators '(lesop greop leqop geqop equop neqop))
+
+  (define boo-operators  '(ampop pipop))
+
+  (define ari-operables '(shotype inttype lontype flotype doutype sigtype unstype)))

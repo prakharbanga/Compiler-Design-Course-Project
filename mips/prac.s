@@ -2,14 +2,12 @@
 
 main:
 
-   li $t0, 0
-   bgtz $t0, l1
-
-   li $v0, 1
-   li $a0, 99
-   syscall
+   li $t0, 5
+   li $t1, 1
+   sge $t2, $t0, $t1
 
 l1:
    li $v0, 1
-   li $a0, 99
+   move $a0, $t2
    syscall
+   
