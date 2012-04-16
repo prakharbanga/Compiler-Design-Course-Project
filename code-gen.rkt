@@ -4,6 +4,10 @@
            "semantic.rkt"
            "parser.rkt")
 
+  (define codegen_label_count 0)
+
+  (define (new_codegen_label) (begin (inc1! codegen_label_count) (string-append "codegen_label" (number->string codegen_label_count))))
+
   (define (code-gen ir) (string-append 
                           "\t.data\n"
                           "newline: .asciiz \"\\n\"" "\n"
@@ -43,7 +47,16 @@
                                        "syscall" "\n"
                                        "li $v0, 4" "\n"
                                        "la $a0, newline" "\n"
-                                       "syscall" "\n")])
+                                       "syscall" "\n")]
+                                    [(list 'func_call (list 'identf func_name) par_list)
+                                     (let [(func_entry (lookup sym_tab func_name))
+                                           (return_label (new_codegen_label))]
+                                       (string-append
+                                         "la $t0, " return_label "\n"
+                                         "addi $sp, -4" "\n"
+                                         "sw $t0, ($sp)" "\n"
+                                         "j " (hash-ref func_entry __label) "\n"
+                                         return_label ":\n"))])
                              (make-code (cdr ir) sym_tab)) "")))
 
   (define (expr-code ir sym_tab)

@@ -457,7 +457,7 @@
           ((CONTINUE SEMICOLON          ) #f )
           ((BREAK SEMICOLON             ) #f )
           ((RETURN SEMICOLON            ) (list (list return)))
-          ((RETURN expression SEMICOLON ) (list (list return (car $2)))))
+          ((RETURN expression SEMICOLON ) (list (list return $2))))
 
         (translation_unit 
           ((external_declaration                  ) $1 )

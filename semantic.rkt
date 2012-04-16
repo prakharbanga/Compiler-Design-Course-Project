@@ -15,7 +15,7 @@
   (define-syntax-rule (setr! x y) (ret (set! x y)))
 
   (define-syntax-rule (inc1! x) (set! x (+ 1 x)))
-  (define (new_label) (begin (inc1! label_count) (string-append "label_" (number->string label_count))))
+  (define (new_label) (begin (inc1! label_count) (string-append "sem_label_" (number->string label_count))))
   (define (new___var) (begin (inc1! var___count) (string-append "var___" (number->string var___count))))
 
   (define-syntax-rule (make-var-entry)
@@ -79,13 +79,13 @@
                                          [(and binding (list 'assgn (list op1 op2))) (get-gen-type! (expr-type op1) (expr-type op2)) (list binding)]
                                          [(and binding (list 'return expr)) (get-gen-type! (expr-type expr) (get_ret_type cur_sym_tab )) (list binding)]
                                          [(and binding (list 'return)) (get-gen-type! voitype (get_ret_type cur_sym_tab )) (list binding)]
+                                         [(and binding (list 'func_call (list 'identf "print"  ) par_list)) (list binding)]
                                          [(and binding (list 'func_call (list 'identf func_name) par_list))
-                                          (if (not (equal? func_name "print"))
                                             (let* [(func_entry (lookup cur_sym_tab func_name))
                                                    (def_par_list (hash-ref func_entry __parlist))]
                                               (if (not (equal? (length par_list) (length def_par_list))) (error "Wrong number of arguments") null)
                                               (for-each (lambda (par1 par2) (get-gen-type! (expr-type par1) (car par2))) par_list def_par_list)
-                                              (list binding)) (list binding))])
+                                              (list binding))])
                               (semantic (cdr ast)))
         null)))
 

@@ -1,13 +1,13 @@
 int main();
+int b();
 
 int main() {
 
-   int a = 5, b; 
-   print(a); 
-   
-   b = a + 67 - 45;
-   print(b);
+   b();
 
-   b = 56 - (27 + 5);
-   print(b);
-   }
+}
+
+int b() {
+int a = 5;
+print(a);
+}
