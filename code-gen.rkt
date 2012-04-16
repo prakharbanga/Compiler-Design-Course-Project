@@ -18,13 +18,18 @@
 
 
   (define (make-data sym_tab)
-    (hash-map (symbol_table-table sym_tab) (lambda (id entry) (match (hash-ref entry __whatisit)
-                                                                     ['var_ (match (hash-ref entry __type)
-                                                                                   ['inttype (string-append (hash-ref entry __mem) ": .word 0")]
-                                                                                   [_ ""])]
-                                                                     ['func (if (hash-has-key? entry __def)
-                                                                              (make-data (hash-ref entry __symtab))
-                                                                              (error "Function declared but never defined."))]))))
+    (hash-map (symbol_table-table sym_tab) 
+              (lambda (id entry) 
+                (match (hash-ref entry __whatisit)
+                       ['var_ (data-for-var-entry (list (hash-ref entry __type) (hash-ref entry __mem)))]
+                       ['func (if (hash-has-key? entry __def)
+                                (map data-for-var-entry (hash-ref entry __localmemlist))
+                                (error "Function declared but never defined."))]))))
+
+  (define (data-for-var-entry var-entry)
+    (match var-entry
+           [(list 'inttype location) (string-append location ": .word 0")]
+           [_ ""]))
 
   (define (make-code ir sym_tab)
     (begin ;(display ir) (newline)
@@ -53,15 +58,20 @@
                                     [(list 'func_call (list 'identf func_name) arg_list)
                                      (let [(func_entry (lookup sym_tab func_name))
                                            (return_label (new_codegen_label))]
-                                       (string-append
-                                         "\t" "la $t0, " return_label "\n"
-                                         "\t" "addi $sp, -4" "\n"
-                                         "\t" "sw $t0, ($sp)" "\n"
-                                         (let [(func_entry (lookup sym_tab func_name))]
-                                           (store-arguments sym_tab (hash-ref func_entry __symtab) arg_list (hash-ref func_entry __parlist)))
-                                         "\t" "j " (hash-ref func_entry __label) "\n"
-                                         return_label ":\n"
-                                         "\taddi $sp, 4" "\n"))]
+                                       (let [(locals_mem_list (hash-ref
+                                                                (lookup (parent sym_tab) (symbol_table-func_name sym_tab))
+                                                                __localmemlist))]
+                                         (string-append
+                                           (store-locals-on-stack locals_mem_list)
+                                           "\t" "la $t0, " return_label "\n"
+                                           "\t" "addi $sp, -4" "\n"
+                                           "\t" "sw $t0, ($sp)" "\n"
+                                           (let [(func_entry (lookup sym_tab func_name))]
+                                             (store-arguments sym_tab (hash-ref func_entry __symtab) arg_list (hash-ref func_entry __parlist)))
+                                           "\t" "j " (hash-ref func_entry __label) "\n"
+                                           return_label ":\n"
+                                           "\t" "addi $sp, 4" "\n"
+                                           (retrieve-locals-from-stack locals_mem_list))))]
                                     [(list 'return expr)
                                      (if (equal? (symbol_table-func_name sym_tab) "main")
                                        (string-append
@@ -77,13 +87,32 @@
                                          ))])
                              (make-code (cdr ir) sym_tab)) "")))
 
+  (define (store-locals-on-stack local_list)
+    (if (not (null? local_list))
+      (string-append
+        "\t" "lw $t0, " (cadar local_list) "\n"
+        "\t" "addi $sp, -4" "\n"
+        "\t" "sw $t0, ($sp)" "\n"
+        (store-locals-on-stack (cdr local_list)))
+      ""))
+
+  (define (retrieve-locals-from-stack local_list)
+    (if (not (null? local_list))
+      (string-append
+        (retrieve-locals-from-stack (cdr local_list))
+        "\t" "lw $t0, ($sp)" "\n"
+        "\t" "addi $sp, 4" "\n"
+        "\t" "sw $t0, " (cadar local_list) "\n")
+      ""))
+
+
   (define (store-arguments sym_tab func_symtab arg_list par_list)
     (begin
-     ;(display arg_list)
-     ;(newline)
-     ;(display par_list)
-     ;(newline)
-      (if (not (equal? arg_list null))
+      ;(display arg_list)
+      ;(newline)
+      ;(display par_list)
+      ;(newline)
+      (if (not (null? arg_list))
         (string-append
           (expr-code (list (car arg_list)) sym_tab)
           "\t" "lw $t0, ($sp)"                                                   "\n"
@@ -105,8 +134,8 @@
                                                          "\t" "lw $t0, " (get_memory_loc id sym_tab) "\n"
                                                          "\t" "sw $t0, ($sp)" "\n")]
                                     [(list op (list op1 op2)) (string-append
-                                                                "\t" (expr-code (list op1) sym_tab)
-                                                                "\t" (expr-code (list op2) sym_tab)
+                                                                (expr-code (list op1) sym_tab)
+                                                                (expr-code (list op2) sym_tab)
                                                                 "\t" "lw $t0, ($sp)" "\n"
                                                                 "\t" "lw $t1, 4($sp)" "\n"
                                                                 "\t" (hash-ref mips-op-hash op) "$t0, $t1, $t0" "\n"

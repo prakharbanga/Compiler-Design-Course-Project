@@ -35,12 +35,15 @@
 
   ; Symbol table entry keys
   (define __mem "__mem")
+  (define __whatisit "__whatisit")
+
   (define __type "__type")
+
   (define __parlist "__parlist")
   (define __label "__label")
   (define __symtab "__symtab")
-  (define __whatisit "__whatisit")
   (define __def "__def")
+  (define __localmemlist "__localmemlist")
 
   (define (sym_tab_ins! decl_name decl_fields) (insert! cur_sym_tab decl_name decl_fields))
 
@@ -76,6 +79,7 @@
                                                (set! cur_sym_tab inner_sym_tab)
                                                (for-each (lambda (parameter) (insert-all! (cdr parameter) (car parameter))) (caddr declarator))
                                                (let [(inner (semantic stmts))]
+                                                 (hash-set! (lookup cur_sym_tab func_name) __localmemlist (let [(x (comp_localmemlist cur_sym_tab))] (pairup (flatten x))))
                                                  (set! cur_sym_tab (parent cur_sym_tab))
                                                  (list (list 'defi (list func_name inner))))))]
                                      ['skip null]
@@ -85,12 +89,25 @@
                                      [(and binding (list 'func_call (list 'identf "print"  ) par_list)) (list binding)]
                                      [(and binding (list 'func_call (list 'identf func_name) par_list))
                                       (let* [(func_entry (lookup cur_sym_tab func_name))
-                                             (def_par_list (hash-ref func_entry __parlist))]
+                                             (def_par_list (if (hash-has-key? func_entry __parlist)
+                                                             (hash-ref func_entry __parlist)
+                                                             (error "Not a function")))]
                                         (if (not (equal? (length par_list) (length def_par_list))) (error "Wrong number of arguments") null)
                                         (for-each (lambda (par1 par2) (get-gen-type! (expr-type par1) (car par2))) par_list def_par_list)
                                         (list binding))])
                               (semantic (cdr ast)))
         null)))
+
+  (define (comp_localmemlist sym_tab)
+    (hash-map (symbol_table-table sym_tab)
+              (lambda (id entry) 
+                (match (hash-ref entry __whatisit)
+                       ['var_ (list (hash-ref entry __type) (hash-ref entry __mem))]
+                       ['func (error "Function inside function")]
+                       ['inner (comp_localmemlist (hash-ref entry __symtab))]))))
+
+  (define (pairup x) (if (not (equal? x null)) (append (list (list (car x) (cadr x))) (pairup (cddr x))) null))
+
 
   (define (get-gen-type! t1 t2)
     (if (equal? t1 t2) t1 (error "Type mismatch")))

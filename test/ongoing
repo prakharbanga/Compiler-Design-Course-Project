@@ -1,22 +1,50 @@
 int main();
-int b(int a, int c);
-int d(int def);
+int bo();
+int c();
+int d();
+int e();
+
 
 int main() {
-   int a = 5;
-   b(100, 55);
-   print(a);
-   return 0;
+    int a = 5;
+    int b = 105;
+    bo();
+    print(a);
+    print(b);
+    return 0;
 }
 
-int b(int a, int c) {
-   print(a);
-   print(c);
-   d(a+c);
-   return 0;
+int bo() {
+    int a = 10;
+    int b = 110;
+    c();
+    print(a);
+    print(b);
+    return 0;
 }
 
-int d(int hh) {
-print(hh);
-return hh;
+int c() {
+    int a = 15;
+    int b = 115;
+    d();
+    print(a);
+    print(b);
+    return 0;
+}
+
+int d() {
+    int a = 20;
+    int b = 120;
+    e();
+    print(a);
+    print(b);
+    return 0;
+}
+
+int e() {
+    int a = 25;
+    int b = 125;
+    print(a);
+    print(b);
+    return 0;
 }
