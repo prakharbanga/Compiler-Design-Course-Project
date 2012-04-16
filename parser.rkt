@@ -415,7 +415,7 @@
           ((compound_statement   ) $1 )
           ((expression_statement ) $1 )
           ((selection_statement  ) $1 )
-          ((iteration_statement  ) #f )
+          ((iteration_statement  ) $1 )
           ((jump_statement       ) $1 ))
 
         (labeled_statement 
@@ -447,7 +447,7 @@
           ((SWITCH LB expression RB statement            ) #f                                    ))
 
         (iteration_statement
-          ((WHILE LB expression RB statement                                         ) #f )
+          ((WHILE LB expression RB statement                                         ) (list (tree 'while_stmt $3 $5)))
           ((DO statement WHILE LB expression RB SEMICOLON                            ) #f )
           ((FOR LB expression_statement expression_statement RB statement            ) #f )
           ((FOR LB expression_statement expression_statement expression RB statement ) #f ))

@@ -109,19 +109,32 @@
                                                       (list if_cond 
                                                             (begin 
                                                               (set! cur_sym_tab (new_symbol_table cur_sym_tab 'inner))
-                                                              (let [(return(semantic if_stmts))]
+                                                              (let [(return (semantic if_stmts))]
                                                                 (insert! (parent cur_sym_tab) if_label (make-hash (list (cons __symtab cur_sym_tab)
                                                                                                                         (cons __whatisit 'inner))))
                                                                 (set! cur_sym_tab (parent cur_sym_tab))
                                                                 return))
                                                             (begin 
                                                               (set! cur_sym_tab (new_symbol_table cur_sym_tab 'inner))
-                                                              (let [(return(semantic else_stmts))]
+                                                              (let [(return (semantic else_stmts))]
                                                                 (insert! (parent cur_sym_tab) else_label (make-hash (list (cons __symtab cur_sym_tab)
                                                                                                                           (cons __whatisit 'inner))))
                                                                 (set! cur_sym_tab (parent cur_sym_tab))
                                                                 return))))))
-                                        (error "IF condition must be a relational expression(boolean)."))])
+                                        (error "IF condition must be a relational expression(boolean)."))]
+                                     [(list 'while_stmt (list while_cond while_stmts))
+                                      (if (equal? (expr-type while_cond) 'boolean)
+                                      (let [(while_label (new_label))]
+                                        (list (list 'while_stmt while_label
+                                                    (list while_cond
+                                                          (begin
+                                                            (set! cur_sym_tab (new_symbol_table cur_sym_tab 'inner))
+                                                            (let [(return (semantic while_stmts))]
+                                                              (insert! (parent cur_sym_tab) while_label (make-hash (list (cons __symtab cur_sym_tab)
+                                                                                                                         (cons __whatisit 'inner))))
+                                                              (set! cur_sym_tab (parent cur_sym_tab))
+                                                              return))))))
+                                      (error "WHILE condition must be a relational expression(boolean)."))])
                               (semantic (cdr ast)))
         null)))
 

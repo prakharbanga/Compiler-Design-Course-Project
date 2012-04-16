@@ -1,28 +1,10 @@
 int main();
-int b( int a );
 
 int main() {
-   int a = 9;
-   if(a == 5) {
-      b(10);
-      a += 1;
-   }
-   else {
-      b(3);
+   int a = 9, b = 8;
+   while(a >= 0) {
+      print(a);
       a -= 1;
-   }
-   print(a);
-   return 0;
-}
-
-int b( int x ) {
-   if( x <= 0 ) {
-      return 0;
-   }
-   else {
-      print(x);
-      b(x-1);
-      print(x);
    }
    return 0;
 }

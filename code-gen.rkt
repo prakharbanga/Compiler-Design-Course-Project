@@ -88,27 +88,37 @@
                                     [(list 'if_stmt if_label else_label (list if_cond if_stmts else_stmts))
                                      (let [(end_label (new_codegen_label))]
                                        (string-append
-                                         (trans-cond if_cond if_label else_label sym_tab)
+                                         (trans-cond if_cond else_label sym_tab)
                                          if_label ":\n"
                                          (make-code if_stmts (hash-ref (lookup sym_tab if_label) __symtab))
                                          "\t" "j " end_label "\n"
                                          else_label ":\n"
                                          (make-code else_stmts (hash-ref (lookup sym_tab else_label) __symtab))
+                                         end_label ":\n"))]
+                                    [(list 'while_stmt while_label (list while_cond while_stmts))
+                                     (let [(loop_label (new_codegen_label))
+                                           (end_label (new_codegen_label))]
+                                       (string-append
+                                         loop_label ":\n"
+                                         (trans-cond while_cond end_label sym_tab)
+                                         while_label ":\n"
+                                         (make-code while_stmts (hash-ref (lookup sym_tab while_label) __symtab))
+                                         "\t" "j " loop_label "\n"
                                          end_label ":\n"))])
                              (make-code (cdr ir) sym_tab)) "")))
 
-  (define comp-conds
+  (define false-comp-conds
     (make-hash (list (cons 'lesop "bgez")
                      (cons 'greop "blez")
                      (cons 'leqop "bgtz")
                      (cons 'geqop "bltz"))))
 
-  (define eq-conds
+  (define false-eq-conds
     (make-hash (list (cons 'equop "bne")
                      (cons 'neqop "beq"))))
 
-  (define (trans-cond if_cond if_label else_label sym_tab)
-    (match if_cond
+  (define (trans-cond condit false_label sym_tab)
+    (match condit
            [(list op (list op1 op2))
             (string-append
               (expr-code (list op1) sym_tab)
@@ -117,12 +127,12 @@
               "\t" "add $sp, 4"    "\n"
               "\t" "lw $t0, ($sp)" "\n"
               "\t" "add $sp, 4"    "\n"
-              (if (hash-has-key? comp-conds op)
+              (if (hash-has-key? false-comp-conds op)
                 (string-append
                   "\t" "sub $t0, $t0, $t1" "\n"
-                  "\t" (hash-ref comp-conds op) " $t0, " else_label "\n")
+                  "\t" (hash-ref false-comp-conds op) " $t0, " false_label "\n")
                 (string-append
-                  "\t" (hash-ref eq-conds op) " $t0, $t1, " else_label "\n")))]))
+                  "\t" (hash-ref false-eq-conds op) " $t0, $t1, " false_label "\n")))]))
 
 
 
