@@ -1,47 +1,22 @@
 int main();
-int b();
-int c();
-int d();
-int e();
-int f();
+int b(int a, int c);
+int d(int def);
 
 int main() {
    int a = 5;
-   b();
-   c();
-   d();
-   e();
-   f();
+   b(100, 55);
    print(a);
    return 0;
 }
 
-int b() {
-   c();
-   d();
-   e();
-   f();
-   return 10;
+int b(int a, int c) {
+   print(a);
+   print(c);
+   d(a+c);
+   return 0;
 }
 
-int c() {
-   d();
-   e();
-   f();
-   return 10;
-}
-
-int d() {
-   e();
-   f();
-   return 10;
-}
-
-int e() {
-   f();
-   return 10;
-}
-
-int f() {
-   return 10;
+int d(int hh) {
+print(hh);
+return hh;
 }

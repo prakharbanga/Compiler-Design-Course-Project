@@ -22,7 +22,9 @@
                                                                      ['var_ (match (hash-ref entry __type)
                                                                                    ['inttype (string-append (hash-ref entry __mem) ": .word 0")]
                                                                                    [_ ""])]
-                                                                     ['func (make-data (hash-ref entry __symtab))]))))
+                                                                     ['func (if (hash-has-key? entry __def)
+                                                                              (make-data (hash-ref entry __symtab))
+                                                                              (error "Function declared but never defined."))]))))
 
   (define (make-code ir sym_tab)
     (begin ;(display ir) (newline)
@@ -48,13 +50,15 @@
                                        "\t" "li $v0, 4" "\n"
                                        "\t" "la $a0, newline" "\n"
                                        "\t" "syscall" "\n")]
-                                    [(list 'func_call (list 'identf func_name) par_list)
+                                    [(list 'func_call (list 'identf func_name) arg_list)
                                      (let [(func_entry (lookup sym_tab func_name))
                                            (return_label (new_codegen_label))]
                                        (string-append
                                          "\t" "la $t0, " return_label "\n"
                                          "\t" "addi $sp, -4" "\n"
                                          "\t" "sw $t0, ($sp)" "\n"
+                                         (let [(func_entry (lookup sym_tab func_name))]
+                                           (store-arguments sym_tab (hash-ref func_entry __symtab) arg_list (hash-ref func_entry __parlist)))
                                          "\t" "j " (hash-ref func_entry __label) "\n"
                                          return_label ":\n"
                                          "\taddi $sp, 4" "\n"))]
@@ -72,6 +76,21 @@
                                          "\t" "jr $t0" "\n"
                                          ))])
                              (make-code (cdr ir) sym_tab)) "")))
+
+  (define (store-arguments sym_tab func_symtab arg_list par_list)
+    (begin
+     ;(display arg_list)
+     ;(newline)
+     ;(display par_list)
+     ;(newline)
+      (if (not (equal? arg_list null))
+        (string-append
+          (expr-code (list (car arg_list)) sym_tab)
+          "\t" "lw $t0, ($sp)"                                                   "\n"
+          "\t" "addi $sp, 4"                                                     "\n"
+          "\t" "sw $t0, " (hash-ref (lookup func_symtab (car (cdadar par_list))) __mem) "\n"
+          (store-arguments sym_tab func_symtab (cdr arg_list) (cdr par_list))) 
+        "")))
 
   (define (expr-code ir sym_tab)
     (begin
