@@ -1,10 +1,10 @@
 (module symbol_table racket
   (provide (all-defined-out))
 
-  (struct symbol_table (parent table ret_type) #:transparent)
+  (struct symbol_table (parent table func_name ret_type) #:transparent)
 
-  (define (new_symbol_table parent [ret_type #f])
-    (symbol_table parent (make-hash) ret_type))
+  (define (new_symbol_table parent [func_name #f] [ret_type #f])
+    (symbol_table parent (make-hash) func_name ret_type))
 
   (define (insert! sym_tab lexeme attrs)
     (let ([tab (symbol_table-table sym_tab)])
@@ -24,5 +24,4 @@
     (symbol_table-parent sym_tab))
 
   (define (get_ret_type sym_tab)
-    (symbol_table-ret_type sym_tab))
-  )
+    (symbol_table-ret_type sym_tab)))

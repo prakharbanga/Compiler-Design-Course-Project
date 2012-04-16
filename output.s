@@ -20,6 +20,8 @@ codegen_label1:
 	li $v0, 4
 	la $a0, newline
 	syscall
+	li $v0, 10
+	syscall
 label_1:
 	addi $sp, -4
 	li $t0, 5

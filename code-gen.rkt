@@ -58,14 +58,18 @@
                                          "\t" "j " (hash-ref func_entry __label) "\n"
                                          return_label ":\n"))]
                                     [(list 'return expr)
-                                     (string-append
-                                       (expr-code (list expr) sym_tab)
-                                       "\t" "lw $t1, ($sp)" "\n"
-                                       "\t" "addi $sp, 4" "\n"
-                                       "\t" "lw $t0, ($sp)" "\n"
-                                       "\t" "sw $t1, ($sp)" "\n"
-                                       "\t" "jr $t0" "\n"
-                                       )])
+                                     (if (equal? (symbol_table-func_name sym_tab) "main")
+                                       (string-append
+                                         "\t" "li $v0, 10" "\n"
+                                         "\t" "syscall" "\n")
+                                       (string-append
+                                         (expr-code (list expr) sym_tab)
+                                         "\t" "lw $t1, ($sp)" "\n"
+                                         "\t" "addi $sp, 4" "\n"
+                                         "\t" "lw $t0, ($sp)" "\n"
+                                         "\t" "sw $t1, ($sp)" "\n"
+                                         "\t" "jr $t0" "\n"
+                                         ))])
                              (make-code (cdr ir) sym_tab)) "")))
 
   (define (expr-code ir sym_tab)

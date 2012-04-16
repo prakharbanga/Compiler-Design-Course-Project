@@ -2,10 +2,10 @@ int main();
 int b();
 
 int main() {
-
    int a = 5;
    b();
    print(a);
+   return 0;
 }
 
 int b() {
