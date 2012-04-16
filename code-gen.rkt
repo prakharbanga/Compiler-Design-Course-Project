@@ -37,26 +37,35 @@
                                     [(list 'assgn (list (list 'identf id) op)) 
                                      (string-append 
                                        (expr-code (list op) sym_tab)
-                                       "lw $t0, ($sp)" "\n"
-                                       "sw $t0, " (get_memory_loc id sym_tab) "\n"
-                                       "addi $sp, 4" "\n")]
+                                       "\t" "lw $t0, ($sp)" "\n"
+                                       "\t" "sw $t0, " (get_memory_loc id sym_tab) "\n"
+                                       "\t" "addi $sp, 4" "\n")]
                                     [(list 'func_call (list 'identf "print") (list (list 'identf id)))
                                      (string-append
-                                       "li $v0, 1" "\n"
-                                       "lw $a0, " (get_memory_loc id sym_tab) "\n"
-                                       "syscall" "\n"
-                                       "li $v0, 4" "\n"
-                                       "la $a0, newline" "\n"
-                                       "syscall" "\n")]
+                                       "\t" "li $v0, 1" "\n"
+                                       "\t" "lw $a0, " (get_memory_loc id sym_tab) "\n"
+                                       "\t" "syscall" "\n"
+                                       "\t" "li $v0, 4" "\n"
+                                       "\t" "la $a0, newline" "\n"
+                                       "\t" "syscall" "\n")]
                                     [(list 'func_call (list 'identf func_name) par_list)
                                      (let [(func_entry (lookup sym_tab func_name))
                                            (return_label (new_codegen_label))]
                                        (string-append
-                                         "la $t0, " return_label "\n"
-                                         "addi $sp, -4" "\n"
-                                         "sw $t0, ($sp)" "\n"
-                                         "j " (hash-ref func_entry __label) "\n"
-                                         return_label ":\n"))])
+                                         "\t" "la $t0, " return_label "\n"
+                                         "\t" "addi $sp, -4" "\n"
+                                         "\t" "sw $t0, ($sp)" "\n"
+                                         "\t" "j " (hash-ref func_entry __label) "\n"
+                                         return_label ":\n"))]
+                                    [(list 'return expr)
+                                     (string-append
+                                       (expr-code (list expr) sym_tab)
+                                       "\t" "lw $t1, ($sp)" "\n"
+                                       "\t" "addi $sp, 4" "\n"
+                                       "\t" "lw $t0, ($sp)" "\n"
+                                       "\t" "sw $t1, ($sp)" "\n"
+                                       "\t" "jr $t0" "\n"
+                                       )])
                              (make-code (cdr ir) sym_tab)) "")))
 
   (define (expr-code ir sym_tab)
@@ -64,21 +73,21 @@
       (if (not (null? ir)) (string-append
                              (match (car ir)
                                     [(list 'constn val) (string-append 
-                                                          "addi $sp, -4" "\n"
-                                                          "li $t0, " val "\n"
-                                                          "sw $t0, ($sp)" "\n")]
+                                                          "\t" "addi $sp, -4" "\n"
+                                                          "\t" "li $t0, " val "\n"
+                                                          "\t" "sw $t0, ($sp)" "\n")]
                                     [(list 'identf id) (string-append 
-                                                         "addi $sp, -4" "\n"
-                                                         "lw $t0, " (get_memory_loc id sym_tab) "\n"
-                                                         "sw $t0, ($sp)" "\n")]
+                                                         "\t" "addi $sp, -4" "\n"
+                                                         "\t" "lw $t0, " (get_memory_loc id sym_tab) "\n"
+                                                         "\t" "sw $t0, ($sp)" "\n")]
                                     [(list op (list op1 op2)) (string-append
-                                                                (expr-code (list op1) sym_tab)
-                                                                (expr-code (list op2) sym_tab)
-                                                                "lw $t0, ($sp)" "\n"
-                                                                "lw $t1, 4($sp)" "\n"
-                                                                (hash-ref mips-op-hash op) "$t0, $t1, $t0" "\n"
-                                                                "addi $sp, 4" "\n"
-                                                                "sw $t0, ($sp)" "\n")])
+                                                                "\t" (expr-code (list op1) sym_tab)
+                                                                "\t" (expr-code (list op2) sym_tab)
+                                                                "\t" "lw $t0, ($sp)" "\n"
+                                                                "\t" "lw $t1, 4($sp)" "\n"
+                                                                "\t" (hash-ref mips-op-hash op) "$t0, $t1, $t0" "\n"
+                                                                "\t" "addi $sp, 4" "\n"
+                                                                "\t" "sw $t0, ($sp)" "\n")])
                              (expr-code (cdr ir) sym_tab)) "")))
 
   (define mips-op-hash

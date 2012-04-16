@@ -3,11 +3,11 @@ int b();
 
 int main() {
 
+   int a = 5;
    b();
-
+   print(a);
 }
 
 int b() {
-int a = 5;
-print(a);
+   return 5;
 }

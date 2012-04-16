@@ -1,16 +1,18 @@
-   .data
-label: .asciiz "l2"
    .text
 
 main:
-l1:   j l2
 
-      li $v0, 1
-      li $a0, 50
-      syscall
+   la $t0, l1
+   sw $t0, ($sp)
+   lw $t0, ($sp)
+   jr $t0
 
-l2:   li $v0, 1
-      li $a0, 25
-      syscall
-      j l1
+   li $v0, 1
+   li $a0, 999
+   syscall
+
+l1:
+   li $v0, 1
+   li $a0, 57
+   syscall
 

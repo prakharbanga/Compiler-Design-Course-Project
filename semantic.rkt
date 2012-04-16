@@ -15,7 +15,7 @@
   (define-syntax-rule (setr! x y) (ret (set! x y)))
 
   (define-syntax-rule (inc1! x) (set! x (+ 1 x)))
-  (define (new_label) (begin (inc1! label_count) (string-append "sem_label_" (number->string label_count))))
+  (define (new_label) (begin (inc1! label_count) (string-append "label_" (number->string label_count))))
   (define (new___var) (begin (inc1! var___count) (string-append "var___" (number->string var___count))))
 
   (define-syntax-rule (make-var-entry)
