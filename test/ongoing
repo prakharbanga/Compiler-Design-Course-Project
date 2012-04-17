@@ -1,9 +1,46 @@
 int main();
+int b(int x);
+int c(int x);
+int d(int x);
+int e(int x);
+int f(int x);
+int g(int x);
+
 
 int main() {
-   int a;
-   for(a = 20; a; a -= 1) {
-      print(a);
-   }
+   int c = 10, a = b(5);
+   print(a);
+   print(c);
    return 0;
+}
+
+int b(int x) {
+   int i = 0;
+   for(i; i < 10; i += 1) {
+      if(i == 5) {
+         print(i);
+         return 1 + c(x);
+      }
+   }
+   return 99;
+}
+
+int c(int x) {
+   return 2 + d(x);
+}
+
+int d(int x) {
+   return 3 + e(x);
+}
+
+int e(int x) {
+   return 4 + f(x);
+}
+
+int f(int x) {
+   return 5 + g(x);
+}
+
+int g(int x) {
+   return 6 + x;
 }

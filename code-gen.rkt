@@ -35,6 +35,7 @@
     (begin ;(display ir) (newline)
       (if (not (null? ir)) (string-append
                              (match (car ir)
+                                    [(list 'identf id) ""]
                                     [(list 'defi (list func_name inner))
                                      (let [(func_entry (lookup sym_tab func_name))]
                                        (string-append 
@@ -180,7 +181,27 @@
                                                                 "\t" "lw $t1, 4($sp)" "\n"
                                                                 "\t" (hash-ref mips-op-hash1 op) "$t0, $t1, $t0" "\n"
                                                                 "\t" "addi $sp, 4" "\n"
-                                                                "\t" "sw $t0, ($sp)" "\n")])
+                                                                "\t" "sw $t0, ($sp)" "\n")]
+                                    [(list 'func_call (list 'identf func_name) arg_list)
+                                     (let [(func_entry (lookup sym_tab func_name))
+                                           (return_label (new_codegen_label))]
+                                       (let [(locals_mem_list (hash-ref
+                                                                (lookup (get-glob-symtab sym_tab) (symbol_table-func_name (get-func-symtab sym_tab)))
+                                                                __localmemlist))]
+                                         (string-append
+                                           (store-locals-on-stack locals_mem_list)
+                                           "\t" "la $t0, " return_label "\n"
+                                           "\t" "addi $sp, -4" "\n"
+                                           "\t" "sw $t0, ($sp)" "\n"
+                                           (let [(func_entry (lookup sym_tab func_name))]
+                                             (store-arguments sym_tab (hash-ref func_entry __symtab) arg_list (hash-ref func_entry __parlist)))
+                                           "\t" "j " (hash-ref func_entry __label) "\n"
+                                           return_label ":\n"
+                                           "\t" "lw $t1, ($sp)" "\n"
+                                           "\t" "addi $sp, 4" "\n"
+                                           (retrieve-locals-from-stack locals_mem_list)
+                                           "\t" "addi $sp, -4" "\n"
+                                           "\t" "sw $t1, ($sp)" "\n")))])
                              (expr-code (cdr ir) sym_tab)) "")))
 
   (define mips-op-hash1

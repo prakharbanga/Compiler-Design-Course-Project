@@ -64,6 +64,7 @@
     (begin ;(display ast) (newline)
       (if (not (null? ast)) (append 
                               (match (car ast)
+                                     [(and binding (list 'identf id)) (begin (expr-type binding) (list binding))]
                                      [(list 'decl (list type (list decls stmts ))) (begin (insert-all! decls type) (semantic stmts))]
                                      [(list 'defi (list type declarator stmts))
                                       (begin (let* [(func_name (cadr declarator))
