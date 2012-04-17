@@ -2,9 +2,10 @@
 
 main:
 
-   li $t0, 5
-   li $t1, 1
-   sge $t2, $t0, $t1
+   li $t0, 51
+   li $t1, 14
+   mult $t0, $t1
+   mflo $t2
 
 l1:
    li $v0, 1

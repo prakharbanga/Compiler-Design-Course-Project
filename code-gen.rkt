@@ -6,15 +6,18 @@
 
   (define codegen_label_count 0)
 
+  (define is_main #f)
+
   (define (new_codegen_label) (begin (inc1! codegen_label_count) (string-append "codegen_label" (number->string codegen_label_count))))
 
-  (define (code-gen ir) (string-append 
-                          "\t.data\n"
-                          "newline: .asciiz \"\\n\"" "\n"
-                          (string-join (flatten (make-data cur_sym_tab)) "\n")
-                          "\n"
-                          "\t.text\n"
-                          (make-code ir cur_sym_tab)))
+  (define (code-gen ir) (begin
+                          (string-append 
+                            "\t.data\n"
+                            "newline: .asciiz \"\\n\"" "\n"
+                            (string-join (flatten (make-data cur_sym_tab)) "\n")
+                            "\n"
+                            "\t.text\n"
+                            (make-code ir cur_sym_tab))))
 
 
   (define (make-data sym_tab)
@@ -24,7 +27,7 @@
                        ['var_ (data-for-var-entry (list (hash-ref entry __type) (hash-ref entry __mem)))]
                        ['func (if (hash-has-key? entry __def)
                                 (map data-for-var-entry (hash-ref entry __localmemlist))
-                                (error "Function declared but never defined."))]))))
+                                (errors "Function " id " declared but never defined."))]))))
 
   (define (data-for-var-entry var-entry)
     (match var-entry
@@ -75,9 +78,11 @@
                                            (retrieve-locals-from-stack locals_mem_list))))]
                                     [(list 'return expr)
                                      (if (equal? (symbol_table-func_name sym_tab) "main")
-                                       (string-append
-                                         "\t" "li $v0, 10" "\n"
-                                         "\t" "syscall" "\n")
+                                       (begin 
+                                         (set! is_main #t)
+                                         (string-append
+                                           "\t" "li $v0, 10" "\n"
+                                           "\t" "syscall" "\n"))
                                        (string-append
                                          (expr-code (list expr) sym_tab)
                                          "\t" "lw $t1, ($sp)" "\n"
@@ -179,7 +184,15 @@
                                                                 (expr-code (list op2) sym_tab)
                                                                 "\t" "lw $t0, ($sp)" "\n"
                                                                 "\t" "lw $t1, 4($sp)" "\n"
-                                                                "\t" (hash-ref mips-op-hash1 op) "$t0, $t1, $t0" "\n"
+                                                                (if (hash-has-key? mips-op-hash1 op)
+                                                                  (string-append 
+                                                                    "\t" (hash-ref mips-op-hash1 op) " $t0, $t1, $t0" "\n")
+                                                                  (if (hash-has-key? mips-op-hash2 op)
+                                                                    (let [(inst (hash-ref mips-op-hash2 op))]
+                                                                      (string-append
+                                                                      "\t" (car inst) " $t1, $t0" "\n"
+                                                                      "\t" (cdr inst) " $t0" "\n"))
+                                                                    (errors "Unknown instruction " (symbol->string op))))
                                                                 "\t" "addi $sp, 4" "\n"
                                                                 "\t" "sw $t0, ($sp)" "\n")]
                                     [(list 'func_call (list 'identf func_name) arg_list)
@@ -217,9 +230,13 @@
                  (neqop . "sne"))))
 
   (define mips-op-hash2
-    (make-hash '()))
+    (make-hash '((mulop . ("mult" . "mflo"))
+                 (divop . ("div"  . "mflo"))
+                 (modop . ("div"  . "mfhi")))))
 
-  (define-syntax-rule (get_memory_loc id sym_tab) (hash-ref (lookup sym_tab id) __mem)))
+  (define-syntax-rule (get_memory_loc id sym_tab) (if (hash-has-key? (lookup sym_tab id) __mem)
+                                                    (hash-ref (lookup sym_tab id) __mem)
+                                                    (errors id " not a variable"))))
 
 
 

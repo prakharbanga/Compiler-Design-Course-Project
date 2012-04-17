@@ -120,7 +120,7 @@
           ((postfix_expression LB argument_expression_list RB ) (list func_call $1 $3))
           ((postfix_expression DOT identifier                 ) #f )
           ((postfix_expression PTR_OP identifier              ) #f )
-          ((postfix_expression INC_OP                         ) #f )
+          ((postfix_expression INC_OP                         ) (assgn add_op_assgn $1 '(constn "1")))
           ((postfix_expression DEC_OP                         ) #f ))
 
         (argument_expression_list 
@@ -248,7 +248,7 @@
           ((init_declarator_list COMMA init_declarator ) (list (append (car $1) (car $3)) (append (cadr $1) (cadr $3)))))
 
         (init_declarator 
-          ((declarator                    ) (list (list $1) (list skip)))
+          ((declarator                    ) (list (list $1) (list (list skip))))
           ((declarator ASSIGN initializer ) (list (list $1) (list (assgn no__op_assgn (list identf (cadr $1)) $3)))))
 
         (declspec_type 
@@ -424,7 +424,7 @@
           ((DEFAULT COLON statement                  ) #f ))
 
         (compound_statement 
-          ((LCB RCB                                 ) (list skip))
+          ((LCB RCB                                 ) (list (list skip)))
           ((LCB statement_list RCB                  ) $2 )
           ((LCB declaration_list RCB                ) $2 )
           ((LCB declaration_list statement_list RCB ) (append $2 $3)))
@@ -438,18 +438,18 @@
           ((statement_list statement ) (append $1 $2 )))
 
         (expression_statement 
-          ((SEMICOLON            ) (list skip ))
+          ((SEMICOLON            ) (list (list skip) ))
           ((expression SEMICOLON ) (list $1   )))
 
         (selection_statement 
-          ((IF LB expression RB statement                ) (list (tree 'if_stmt $3 $5 (list skip ))))
+          ((IF LB expression RB statement                ) (list (tree 'if_stmt $3 $5 (list (list skip) ))))
           ((IF LB expression RB statement ELSE statement ) (list (tree 'if_stmt $3 $5 $7         )))
           ((SWITCH LB expression RB statement            ) #f                                    ))
 
         (iteration_statement
           ((WHILE LB expression RB statement                                         ) (list (tree 'while_stmt $3 $5               )))
           ((DO statement WHILE LB expression RB SEMICOLON                            ) #f                                          )
-          ((FOR LB expression_statement expression_statement RB statement            ) (list (tree 'for_stmt $3 $4 (list skip ) $6 )))
+          ((FOR LB expression_statement expression_statement RB statement            ) (list (tree 'for_stmt $3 $4 (list (list skip)) $6 )))
           ((FOR LB expression_statement expression_statement expression RB statement ) (list (tree 'for_stmt $3 $4 $5 $7           ))))
 
         (jump_statement 

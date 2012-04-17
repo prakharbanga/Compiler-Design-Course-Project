@@ -4,6 +4,8 @@
   (require "parser.rkt"
            "symbol_table.rkt")
 
+  (define-syntax-rule (errors a ...) (error (string-append a ...)))
+
   ; The global symbol table
   (define cur_sym_tab (new_symbol_table #f 'global))
 
@@ -61,7 +63,7 @@
                                                     ['func (make-hash [list (cons __label (if (equal? func_name "main") "main" (new_label))) (cons __type type) (cons __parlist (caddr decl)) (cons __whatisit 'func)])])))) decls))
 
   (define (semantic ast)
-    (begin ;(display ast) (newline)
+    (begin ;(display ast) (newline) (display cur_sym_tab) (newline)
       (if (not (null? ast)) (append 
                               (match (car ast)
                                      [(and binding (list 'identf id)) (begin (expr-type binding) (list binding))]
@@ -70,18 +72,18 @@
                                       (begin (let* [(func_name (cadr declarator))
                                                     (inner_sym_tab (new_symbol_table cur_sym_tab func_name type))
                                                     (this_entry (lookup cur_sym_tab func_name))]
-                                               (if (hash-has-key? this_entry __def) (error "Redefinition of function.") (hash-set! this_entry __def #t))
-                                               (if (not (equal? type (hash-ref this_entry __type))) (error "Wrong return type.") #f)
+                                               (if (hash-has-key? this_entry __def) (errors "Redefinition of function " func_name) (hash-set! this_entry __def #t))
+                                               (if (not (equal? type (hash-ref this_entry __type))) (errors "Wrong return type in definition of function " func_name ) #f)
                                                ;(display (hash-ref this_entry __parlist))
                                                ;(newline)
                                                ;(display (caddr declarator))
                                                ;(newline)
                                                (let [(par1 (hash-ref this_entry __parlist))
                                                      (par2 (caddr declarator))]
-                                                 (if (not (equal? (length par1) (length par2))) (error "Wrong number of arguments.") #f)
-                                                 (for-each (lambda (d1 d2) (if (not (equal? (car d1) (car d2))) (error "Wrong parameter types.") #f)) par1 par2)
+                                                 (if (not (equal? (length par1) (length par2))) (errors "Wrong number of arguments in definition of function " func_name) #f)
+                                                 (for-each (lambda (d1 d2) (if (not (equal? (car d1) (car d2))) (errors "Wrong parameter types in definition of function " func_name) #f)) par1 par2)
                                                  (hash-set! this_entry __parlist par2))
-                                               (if (not (equal? (car (last stmts)) 'return)) (error "The last statement in a function should be a return statement.") #f)
+                                               (if (not (equal? (car (last stmts)) 'return)) (errors "The last statement in function " func_name " should be a return statement.") #f)
                                                (hash-set! this_entry __symtab inner_sym_tab)
                                                (set! cur_sym_tab inner_sym_tab)
                                                (for-each (lambda (parameter) (insert-all! (cdr parameter) (car parameter))) (caddr declarator))
@@ -89,18 +91,24 @@
                                                  (hash-set! (lookup cur_sym_tab func_name) __localmemlist (let [(x (comp_localmemlist cur_sym_tab))] (pairup (flatten x))))
                                                  (set! cur_sym_tab (parent cur_sym_tab))
                                                  (list (list 'defi (list func_name inner))))))]
-                                     ['skip null]
-                                     [(and binding (list 'assgn (list op1 op2))) (get-gen-type! (expr-type op1) (expr-type op2)) (list binding)]
-                                     [(and binding (list 'return expr)) (get-gen-type! (expr-type expr) (get_ret_type (get-func-symtab cur_sym_tab) )) (list binding)]
-                                     [(and binding (list 'return)) (get-gen-type! voitype (get_ret_type (get-func-symtab cur_sym_tab) )) (list binding)]
+                                     [(list 'skip) null]
+                                     [(and binding (list 'assgn (list op1 op2))) (get-gen-type! (expr-type op1) (expr-type op2) "Types don't match in assignment operation") (list binding)]
+                                     [(and binding (list 'return expr)) (get-gen-type! 
+                                                                          (expr-type expr)
+                                                                          (get_ret_type (get-func-symtab cur_sym_tab))
+                                                                          (string-append "Return type in return statement doesn't match defined return type for function " (symbol_table-func_name (get-func-symtab cur_sym_tab)))) (list binding)]
+                                     [(and binding (list 'return)) (get-gen-type! 
+                                                                     voitype
+                                                                     (get_ret_type (get-func-symtab cur_sym_tab))
+                                                                     (string-append "Return type in return statement doesn't match defined return type for function " (symbol_table-func_name (get-func-symtab cur_sym_tab)))) (list binding)]
                                      [(and binding (list 'func_call (list 'identf "print"  ) par_list)) (list binding)]
                                      [(and binding (list 'func_call (list 'identf func_name) par_list))
                                       (let* [(func_entry (lookup cur_sym_tab func_name))
                                              (def_par_list (if (hash-has-key? func_entry __parlist)
                                                              (hash-ref func_entry __parlist)
-                                                             (error "Not a function")))]
-                                        (if (not (equal? (length par_list) (length def_par_list))) (error "Wrong number of arguments") null)
-                                        (for-each (lambda (par1 par2) (get-gen-type! (expr-type par1) (car par2))) par_list def_par_list)
+                                                             (errors func_name "not a function")))]
+                                        (if (not (equal? (length par_list) (length def_par_list))) (errors  "Wrong number of arguments in call to function " func_name) null)
+                                        (for-each (lambda (par1 par2) (get-gen-type! (expr-type par1) (car par2) (string-append "Wrong argument types in call to function " func_name))) par_list def_par_list)
                                         (list binding))]
                                      [(list 'if_stmt (list if_cond if_stmts else_stmts))
                                       (if (equal? (expr-type if_cond) 'boolean)
@@ -165,14 +173,14 @@
   (define (pairup x) (if (not (equal? x null)) (append (list (list (car x) (cadr x))) (pairup (cddr x))) null))
 
 
-  (define (get-gen-type! t1 t2)
-    (if (equal? t1 t2) t1 (error "Type mismatch")))
+  (define (get-gen-type! t1 t2 err)
+    (if (equal? t1 t2) t1 (error err)))
 
   (define (expr-type expr)
     (match expr
            [(list op (list op1 op2)) (let* [(op1-type (expr-type op1)) 
                                             (op2-type (expr-type op2)) 
-                                            (this_type (get-gen-type! op1-type op2-type))]
+                                            (this_type (get-gen-type! op1-type op2-type "Type mismatch in operation"))]
                                        (if (member this_type ari-operables)
                                          (if (member op ari-ari-operators)
                                            this_type
@@ -190,12 +198,12 @@
             (let* [(func_entry (lookup cur_sym_tab func_name))
                    (def_par_list (hash-ref func_entry __parlist))
                    (type (hash-ref func_entry __type))]
-              (if (not (equal? (length par_list) (length def_par_list))) (error "Wrong number of arguments") null)
-              (for-each (lambda (par1 par2) (get-gen-type! (expr-type par1) (car par2))) par_list def_par_list)
+              (if (not (equal? (length par_list) (length def_par_list))) (errors "Wrong number of arguments in call to function " func_name) null)
+              (for-each (lambda (par1 par2) (get-gen-type! (expr-type par1) (car par2) (string-append "Wrong argument types in call to function " func_name))) par_list def_par_list)
               type)]))
 
 
-  (define ari-ari-operators '(mulop divop addop subop))
+  (define ari-ari-operators '(modop mulop divop addop subop))
 
   (define ari-boo-operators '(lesop greop leqop geqop equop neqop))
 
