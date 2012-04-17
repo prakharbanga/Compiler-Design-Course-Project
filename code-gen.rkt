@@ -104,7 +104,20 @@
                                          while_label ":\n"
                                          (make-code while_stmts (hash-ref (lookup sym_tab while_label) __symtab))
                                          "\t" "j " loop_label "\n"
-                                         end_label ":\n"))])
+                                         end_label ":\n"))]
+                                    [(list 'for_stmt for_label (list for_init for_cond for_loop for_stmts))
+                                     (let [(loop_label (new_codegen_label))
+                                           (end_label (new_codegen_label))]
+                                       (let [(for_symtab (hash-ref (lookup sym_tab for_label) __symtab))]
+                                         (string-append
+                                           (make-code for_init for_symtab)
+                                           loop_label ":\n"
+                                           (trans-cond for_cond end_label for_symtab)
+                                           for_label ":\n"
+                                           (make-code for_stmts for_symtab)
+                                           (make-code for_loop for_symtab)
+                                           "\t" "j " loop_label "\n"
+                                           end_label ":\n")))])
                              (make-code (cdr ir) sym_tab)) "")))
 
   (define (trans-cond condit false_label sym_tab)

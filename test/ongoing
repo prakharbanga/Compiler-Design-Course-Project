@@ -1,12 +1,9 @@
 int main();
 
 int main() {
-   int a = 9, b = 8;
-   while((a >= 0) | (b < 12)) {
+   int a;
+   for(a = 20; a; a -= 1) {
       print(a);
-      a -= 1;
-      b += 1;
-      print(b);
    }
    return 0;
 }

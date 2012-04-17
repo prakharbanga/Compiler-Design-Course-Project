@@ -447,10 +447,10 @@
           ((SWITCH LB expression RB statement            ) #f                                    ))
 
         (iteration_statement
-          ((WHILE LB expression RB statement                                         ) (list (tree 'while_stmt $3 $5)))
-          ((DO statement WHILE LB expression RB SEMICOLON                            ) #f )
-          ((FOR LB expression_statement expression_statement RB statement            ) #f )
-          ((FOR LB expression_statement expression_statement expression RB statement ) #f ))
+          ((WHILE LB expression RB statement                                         ) (list (tree 'while_stmt $3 $5               )))
+          ((DO statement WHILE LB expression RB SEMICOLON                            ) #f                                          )
+          ((FOR LB expression_statement expression_statement RB statement            ) (list (tree 'for_stmt $3 $4 (list skip ) $6 )))
+          ((FOR LB expression_statement expression_statement expression RB statement ) (list (tree 'for_stmt $3 $4 $5 $7           ))))
 
         (jump_statement 
           ((GOTO identifier SEMICOLON   ) #f )
