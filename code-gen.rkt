@@ -8,6 +8,8 @@
 
   (define is_main #f)
 
+  (define loop_labels '())
+
   (define (new_codegen_label) (begin (inc1! codegen_label_count) (string-append "codegen_label" (number->string codegen_label_count))))
 
   (define (code-gen ir) (begin
@@ -101,30 +103,38 @@
                                          else_label ":\n"
                                          (make-code else_stmts (hash-ref (lookup sym_tab else_label) __symtab))
                                          end_label ":\n"))]
-                                    [(list 'while_stmt while_label (list while_cond while_stmts))
-                                     (let [(loop_label (new_codegen_label))
-                                           (end_label (new_codegen_label))]
+                                    [(list 'while_stmt while_label loop_label end_label next_label (list while_cond while_stmts))
+                                     (string-append
+                                       loop_label ":\n"
+                                       (trans-cond while_cond end_label sym_tab)
+                                       while_label ":\n"
+                                       (make-code while_stmts (hash-ref (lookup sym_tab while_label) __symtab))
+                                       next_label ":\n"
+                                       "\t" "j " loop_label "\n"
+                                       end_label ":\n")]
+                                    [(list 'for_stmt for_label loop_label end_label next_label (list for_init for_cond for_loop for_stmts))
+                                     (let [(for_symtab (hash-ref (lookup sym_tab for_label) __symtab))]
                                        (string-append
+                                         (make-code for_init for_symtab)
                                          loop_label ":\n"
-                                         (trans-cond while_cond end_label sym_tab)
-                                         while_label ":\n"
-                                         (make-code while_stmts (hash-ref (lookup sym_tab while_label) __symtab))
+                                         (trans-cond for_cond end_label for_symtab)
+                                         for_label ":\n"
+                                         (make-code for_stmts for_symtab)
+                                         next_label ":\n"
+                                         (make-code for_loop for_symtab)
                                          "\t" "j " loop_label "\n"
                                          end_label ":\n"))]
-                                    [(list 'for_stmt for_label (list for_init for_cond for_loop for_stmts))
-                                     (let [(loop_label (new_codegen_label))
-                                           (end_label (new_codegen_label))]
-                                       (let [(for_symtab (hash-ref (lookup sym_tab for_label) __symtab))]
-                                         (string-append
-                                           (make-code for_init for_symtab)
-                                           loop_label ":\n"
-                                           (trans-cond for_cond end_label for_symtab)
-                                           for_label ":\n"
-                                           (make-code for_stmts for_symtab)
-                                           (make-code for_loop for_symtab)
-                                           "\t" "j " loop_label "\n"
-                                           end_label ":\n")))])
+                                    [(list 'break) 
+                                     (display (symbol_table-table (parent sym_tab))) (newline)
+                                     (string-append
+                                     "\t" "j " (caddr (get_loop_labels sym_tab)) "\n")]
+                                    [(list 'continue) 
+                                     (string-append
+                                     "\t" "j " (cadddr (get_loop_labels sym_tab)) "\n")])
                              (make-code (cdr ir) sym_tab)) "")))
+
+  (define (get_loop_labels symtab)
+    (hash-ref (lookup symtab "__looplabels") "__labels"))
 
   (define (trans-cond condit false_label sym_tab)
     (string-append

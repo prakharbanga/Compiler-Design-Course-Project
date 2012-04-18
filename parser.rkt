@@ -454,8 +454,8 @@
 
         (jump_statement 
           ((GOTO identifier SEMICOLON   ) #f )
-          ((CONTINUE SEMICOLON          ) #f )
-          ((BREAK SEMICOLON             ) #f )
+          ((CONTINUE SEMICOLON          ) (list (list 'continue)))
+          ((BREAK SEMICOLON             ) (list (list 'break)))
           ((RETURN SEMICOLON            ) (list (list return)))
           ((RETURN expression SEMICOLON ) (list (list return $2))))
 

@@ -53,6 +53,8 @@
   (define __def "__def")
   (define __localmemlist "__localmemlist")
 
+  (define __looplabels "__looplabels")
+
   (define (sym_tab_ins! decl_name decl_fields) (insert! cur_sym_tab decl_name decl_fields))
 
   (define (insert-all! decls type) 
@@ -92,6 +94,8 @@
                                                  (set! cur_sym_tab (parent cur_sym_tab))
                                                  (list (list 'defi (list func_name inner))))))]
                                      [(list 'skip) null]
+                                     [(list 'break) (list (list 'break))]
+                                     [(list 'continue) (list (list 'continue))]
                                      [(and binding (list 'assgn (list op1 op2))) (get-gen-type! (expr-type op1) (expr-type op2) "Types don't match in assignment operation") (list binding)]
                                      [(and binding (list 'return expr)) (get-gen-type! 
                                                                           (expr-type expr)
@@ -133,19 +137,28 @@
                                         (error "IF condition must be a relational expression(boolean)."))]
                                      [(list 'while_stmt (list while_cond while_stmts))
                                       (if (equal? (expr-type while_cond) 'boolean)
-                                        (let [(while_label (new_label))]
-                                          (list (list 'while_stmt while_label
+                                        (let [(while_label (new_label))
+                                              (loop_label (new_label)) 
+                                              (end_label (new_label)) 
+                                              (next_label (new_label)) ]
+                                          (list (list 'while_stmt while_label loop_label end_label next_label 
                                                       (list while_cond
                                                             (begin
                                                               (set! cur_sym_tab (new_symbol_table cur_sym_tab 'inner))
                                                               (let [(return (semantic while_stmts))]
                                                                 (insert! (parent cur_sym_tab) while_label (make-hash (list (cons __symtab cur_sym_tab)
-                                                                                                                           (cons __whatisit 'inner))))
+                                                                                                                           (cons __whatisit 'inner)
+                                                                                                                           )))
+                                                                (insert! cur_sym_tab __looplabels (make-hash (list (cons "__labels" (list while_label loop_label end_label next_label))
+                                                                                                                   (cons "__whatisit" "something"))))
                                                                 (set! cur_sym_tab (parent cur_sym_tab))
                                                                 return))))))
                                         (error "WHILE condition must be a relational expression(boolean)."))]
                                      [(list 'for_stmt (list for_init for_cond for_loop for_stmts))
-                                      (let [(for_label (new_label))]
+                                      (let [(for_label (new_label))
+                                            (loop_label (new_label)) 
+                                            (end_label (new_label)) 
+                                            (next_label (new_label))]
                                         (begin
                                           (set! cur_sym_tab (new_symbol_table cur_sym_tab 'inner))
                                           (if (equal? (expr-type (car for_cond)) 'boolean)
@@ -155,20 +168,23 @@
                                                     (return_stmts (semantic for_stmts))]
                                                 (insert! (parent cur_sym_tab) for_label (make-hash (list (cons __symtab cur_sym_tab)
                                                                                                          (cons __whatisit 'inner))))
+                                                (insert! cur_sym_tab __looplabels (make-hash (list (cons "__labels" (list for_label loop_label end_label next_label))
+                                                                                                                   (cons "__whatisit" "something"))))
                                                 (set! cur_sym_tab (parent cur_sym_tab))
-                                                (list (list 'for_stmt for_label (list return_init (car for_cond) return_loop return_stmts)))))
+                                                (list (list 'for_stmt for_label loop_label end_label next_label (list return_init (car for_cond) return_loop return_stmts)))))
                                             (error "FOR condition must be a relational expression(boolean)."))))])
                               (semantic (cdr ast)))
         null)))
 
 
   (define (comp_localmemlist sym_tab)
-    (hash-map (symbol_table-table sym_tab)
+    (remove "" (hash-map (symbol_table-table sym_tab)
               (lambda (id entry) 
                 (match (hash-ref entry __whatisit)
                        ['var_ (list (hash-ref entry __type) (hash-ref entry __mem))]
                        ['func (error "Function inside function")]
-                       ['inner (comp_localmemlist (hash-ref entry __symtab))]))))
+                       ['inner (comp_localmemlist (hash-ref entry __symtab))]
+                       ["something" ""])))))
 
   (define (pairup x) (if (not (equal? x null)) (append (list (list (car x) (cadr x))) (pairup (cddr x))) null))
 
